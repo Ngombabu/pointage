@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consignes - MobileApp</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .consigne-list {
+            list-style: none;
+        }
+
+        .consigne-item {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 16px;
+            border-left: 4px solid #2563eb;
+        }
+
+        .consigne-item.warning {
+            border-left-color: #eab308;
+        }
+
+        .consigne-item.danger {
+            border-left-color: #ef4444;
+        }
+
+        .consigne-title {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .consigne-text {
+            color: #475569;
+            font-size: 0.95rem;
+        }
+
+        .support-card {
+            background: #e6f0ff;
+            border-radius: 16px;
+            padding: 1.2rem;
+            margin-top: 2rem;
+            border: 1px solid #2563eb33;
+        }
+
+        .support-title {
+            font-weight: 600;
+            color: #2563eb;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <div class="logo-img">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                    </svg>
+                </div>
+                <span class="logo-text">MobileApp</span>
+            </div>
+            <div id="userHeaderInfo"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="section-card">
+            <h2 class="section-title"><span>📋</span> Consignes</h2>
+            
+            <ul class="consigne-list">
+                <li class="consigne-item warning">
+                    <div class="consigne-title">⚠️ Problème technique</div>
+                    <div class="consigne-text">Envoyez la liste de présence avant 07h30</div>
+                </li>
+                
+                <li class="consigne-item danger">
+                    <div class="consigne-title">🕒 Horaires de connexion</div>
+                    <div class="consigne-text">Autorisé uniquement de 18h00 à 05h00</div>
+                </li>
+                
+                <li class="consigne-item">
+                    <div class="consigne-title">📩 Réclamations</div>
+                    <div class="consigne-text">Contactez le superviseur avant le 25 du mois</div>
+                </li>
+                
+                <li class="consigne-item">
+                    <div class="consigne-title">🔄 QR Code</div>
+                    <div class="consigne-text">Mis à jour toutes les 15 secondes</div>
+                </li>
+            </ul>
+
+            <div class="support-card">
+                <div class="support-title">📞 Support technique</div>
+                <p>Téléphone : +243 974 437 984<br>
+                Email : support@mobileapp.com</p>
+                <div style="margin-top: 0.5rem; font-size: 0.9rem; color: #64748b;">
+                    Mis à jour le 19/03/2026
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Navigation bas type WhatsApp -->
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item" id="nav-home">
+            <svg viewBox="0 0 24 24">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+            <span>Accueil</span>
+        </a>
+        <a href="agent.html" class="nav-item" id="nav-agent">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+            <span>Agent</span>
+        </a>
+        <a href="detaille.html" class="nav-item" id="nav-detail">
+            <svg viewBox="0 0 24 24">
+                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+            </svg>
+            <span>Détails</span>
+        </a>
+        <a href="consigne.html" class="nav-item active" id="nav-consigne">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+            <span>Consigne</span>
+        </a>
+    </nav>
+
+    <script>
+        const SessionManager = {
+            get(key) {
+                let value = localStorage.getItem(key);
+                if (!value) value = sessionStorage.getItem(key);
+                return value ? JSON.parse(value) : null;
+            },
+            clear() {
+                localStorage.clear();
+                sessionStorage.clear();
+            }
+        };
+
+        const userData = SessionManager.get('user');
+        const headerInfo = document.getElementById('userHeaderInfo');
+        
+        if (userData) {
+            const fullName = [userData.nom, userData.prenom].filter(Boolean).join(' ');
+            headerInfo.innerHTML = `
+                <div class="user-badge">
+                    <span class="avatar">${(fullName[0] || '👤').toUpperCase()}</span>
+                    <span class="name">${fullName || 'Agent'}</span>
+                </div>
+                <button class="btn-logout" id="logoutBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                    </svg>
+                    Quitter
+                </button>
+            `;
+        } else {
+            headerInfo.innerHTML = '<a href="connexion.html" class="btn-logout" style="border-color: #2563eb; color: #2563eb;">Connexion</a>';
+        }
+
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'logoutBtn' || e.target.closest('#logoutBtn')) {
+                SessionManager.clear();
+                fetch('API/connexion/logout.php')
+                    .finally(() => {
+                        window.location.replace('connexion.html');
+                    });
+            }
+        });
+    </script>
+</body>
+</html>

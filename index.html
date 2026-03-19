@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MobileApp - Accueil</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .feature-card {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .badge {
+            background: #e6f0ff;
+            color: #1e4f8a;
+            padding: 0.3rem 0.9rem;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            display: inline-block;
+        }
+
+        .info-list {
+            list-style: none;
+        }
+
+        .info-list li {
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 480px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <div class="logo-img">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                    </svg>
+                </div>
+                <span class="logo-text">MobileApp</span>
+            </div>
+            <div id="userHeaderInfo"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="section-card">
+            <h2 class="section-title"><span>🏠</span> Accueil</h2>
+            <div class="section-content">
+                <p>Bienvenue sur votre plateforme de gestion intégrée.</p>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-title">Centralisation</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🛡️</div>
+                        <div class="feature-title">QR Code</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💰</div>
+                        <div class="feature-title">Suivi salarial</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📍</div>
+                        <div class="feature-title">Pointage localisé</div>
+                    </div>
+                </div>
+
+                <ul class="info-list">
+                    <li>📊 <strong>Centralisation :</strong> Toutes vos données en un lieu unique</li>
+                    <li>🛡️ <strong>QR Code :</strong> Mise à jour toutes les 15 secondes</li>
+                    <li>💰 <strong>Suivi salarial :</strong> Visualisez vos retenues</li>
+                    <li>📍 <strong>Pointage localisé :</strong> Depuis votre lieu de travail</li>
+                </ul>
+
+                <div style="text-align: center; margin-top: 2rem;">
+                    <span class="badge">Application mobile sécurisée</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Navigation bas type WhatsApp -->
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item active" id="nav-home">
+            <svg viewBox="0 0 24 24">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+            <span>Accueil</span>
+        </a>
+        <a href="agent.html" class="nav-item" id="nav-agent">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+            <span>Agent</span>
+        </a>
+        <a href="detaille.html" class="nav-item" id="nav-detail">
+            <svg viewBox="0 0 24 24">
+                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+            </svg>
+            <span>Détails</span>
+        </a>
+        <a href="consigne.html" class="nav-item" id="nav-consigne">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+            <span>Consigne</span>
+        </a>
+    </nav>
+
+    <script>
+        const SessionManager = {
+            get(key) {
+                let value = localStorage.getItem(key);
+                if (!value) value = sessionStorage.getItem(key);
+                return value ? JSON.parse(value) : null;
+            },
+            clear() {
+                localStorage.clear();
+                sessionStorage.clear();
+            }
+        };
+
+        const userData = SessionManager.get('user');
+        const headerInfo = document.getElementById('userHeaderInfo');
+        
+        if (userData) {
+            const fullName = [userData.nom, userData.prenom].filter(Boolean).join(' ');
+            headerInfo.innerHTML = `
+                <div class="user-badge">
+                    <span class="avatar">${(fullName[0] || '👤').toUpperCase()}</span>
+                    <span class="name">${fullName || 'Agent'}</span>
+                </div>
+                <button class="btn-logout" id="logoutBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                    </svg>
+                    Quitter
+                </button>
+            `;
+        } else {
+            headerInfo.innerHTML = '<a href="connexion.html" class="btn-logout" style="border-color: #2563eb; color: #2563eb;">Connexion</a>';
+        }
+
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'logoutBtn' || e.target.closest('#logoutBtn')) {
+                SessionManager.clear();
+                fetch('API/connexion/logout.php')
+                    .finally(() => {
+                        window.location.replace('connexion.html');
+                    });
+            }
+        });
+    </script>
+</body>
+</html>

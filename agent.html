@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent - MobileApp</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Styles spécifiques à agent.html */
+        .qr-section {
+            text-align: center;
+        }
+
+        .qr-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border: 3px solid #2563eb33;
+            margin: 1.5rem 0;
+            min-height: 320px;
+            width: 100%;
+        }
+
+        #qrImage {
+            max-width: 250px;
+            width: 100%;
+            height: auto;
+            display: none;
+            border-radius: 10px;
+        }
+
+        .timer-container {
+            margin: 1.5rem 0;
+        }
+
+        .timer-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2563eb;
+            margin-bottom: 0.5rem;
+        }
+
+        .timer-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .timer-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb, #7c3aed);
+            transition: width 0.3s linear;
+        }
+
+        .token-display {
+            background: #e6f0ff;
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: monospace;
+            word-break: break-all;
+            font-size: 0.85rem;
+            border: 1px solid #2563eb33;
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary, .btn-secondary, .btn-detail {
+            flex: 1;
+            padding: 1rem;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            text-decoration: none;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #2563eb;
+            border: 2px solid #2563eb;
+        }
+
+        .btn-secondary:hover {
+            background: #e6f0ff;
+            transform: translateY(-2px);
+        }
+
+        .btn-detail {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .btn-detail:hover {
+            background: #7c3aed;
+            transform: translateY(-2px);
+        }
+
+        #qrError {
+            color: #ef4444;
+            padding: 1rem;
+        }
+
+        @media (max-width: 480px) {
+            .actions {
+                flex-direction: column;
+            }
+            .btn-primary, .btn-secondary, .btn-detail {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <div class="logo-img">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                    </svg>
+                </div>
+                <span class="logo-text">MobileApp</span>
+            </div>
+            <div id="userHeaderInfo"></div>
+        </div>
+    </header>
+
+    <main>
+        <section class="section-card">
+            <h2 class="section-title"><span>👤</span> QR Code de pointage</h2>
+            
+            <div class="qr-section">
+                <div class="qr-container">
+                    <img id="qrImage" src="" alt="QR Code">
+                    <div id="qrLoading" class="loading-spinner"></div>
+                    <div id="qrError" style="display: none;">❌ Erreur de chargement</div>
+                </div>
+
+                <div class="timer-container">
+                    <div class="timer-text">
+                        Mise à jour dans <span id="countdown">15</span>s
+                    </div>
+                    <div class="timer-bar">
+                        <div class="timer-progress" id="timerProgress" style="width: 100%;"></div>
+                    </div>
+                </div>
+
+                <div class="token-display">
+                    <strong>Token:</strong> <span id="currentToken">-</span>
+                </div>
+
+                <div class="actions">
+                    <button class="btn-primary" id="refreshBtn">🔄 Rafraîchir</button>
+                    <button class="btn-secondary" id="verifyBtn">✅ Vérifier</button>
+                    <a href="detaille.html" class="btn-detail" id="detailBtn">📋 Détails</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Navigation bas type WhatsApp -->
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item" id="nav-home">
+            <svg viewBox="0 0 24 24">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+            <span>Accueil</span>
+        </a>
+        <a href="agent.html" class="nav-item active" id="nav-agent">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+            <span>Agent</span>
+        </a>
+        <a href="detaille.html" class="nav-item" id="nav-detail">
+            <svg viewBox="0 0 24 24">
+                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+            </svg>
+            <span>Détails</span>
+        </a>
+        <a href="consigne.html" class="nav-item" id="nav-consigne">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+            <span>Consigne</span>
+        </a>
+    </nav>
+
+    <script>
+        // Session Manager
+        const SessionManager = {
+            set(key, value) {
+                localStorage.setItem(key, JSON.stringify(value));
+                sessionStorage.setItem(key, JSON.stringify(value));
+            },
+            get(key) {
+                let value = localStorage.getItem(key);
+                if (!value) value = sessionStorage.getItem(key);
+                return value ? JSON.parse(value) : null;
+            },
+            clear() {
+                localStorage.clear();
+                sessionStorage.clear();
+            },
+            isLoggedIn() {
+                return this.get('is_logged_in') === true && this.get('user') !== null;
+            }
+        };
+
+        // Vérifier connexion - NE PAS REDIRIGER, juste afficher le bouton déconnexion
+        const userData = SessionManager.get('user');
+        const headerInfo = document.getElementById('userHeaderInfo');
+        
+        if (userData) {
+            const fullName = [userData.nom, userData.prenom].filter(Boolean).join(' ');
+            headerInfo.innerHTML = `
+                <div class="user-badge">
+                    <span class="avatar">${(fullName[0] || '👤').toUpperCase()}</span>
+                    <span class="name">${fullName || 'Agent'}</span>
+                </div>
+                <button class="btn-logout" id="logoutBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                    </svg>
+                    Quitter
+                </button>
+            `;
+        } else {
+            headerInfo.innerHTML = '<a href="connexion.html" class="btn-logout" style="border-color: #2563eb; color: #2563eb;">Connexion</a>';
+        }
+
+        // Variables
+        const API_BASE = 'API/qr_code/';
+        let countdown = 15;
+        let timerInterval;
+        let currentToken = '';
+        let userId = userData ? userData.id : null;
+        let retryCount = 0;
+        const maxRetries = 3;
+
+        function showElement(id, show) {
+            const el = document.getElementById(id);
+            if (el) el.style.display = show ? 'block' : 'none';
+        }
+
+        function generateQR() {
+            if (!userId) return;
+
+            const qrImage = document.getElementById('qrImage');
+            const refreshBtn = document.getElementById('refreshBtn');
+
+            showElement('qrLoading', true);
+            showElement('qrError', false);
+            qrImage.style.display = 'none';
+            if (refreshBtn) refreshBtn.disabled = true;
+
+            fetch(`${API_BASE}generate_qr.php?action=generate&t=${Date.now()}`, {
+                cache: 'no-store'
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Erreur réseau');
+                return res.text();
+            })
+            .then(text => {
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error('JSON invalide:', text.substring(0, 100));
+                    throw new Error('Réponse serveur invalide');
+                }
+            })
+            .then(data => {
+                retryCount = 0;
+                
+                if (data.success) {
+                    const imageUrl = `/POINTAGE/${data.qr_path}`;
+                    
+                    // Précharger l'image
+                    const img = new Image();
+                    img.onload = () => {
+                        qrImage.src = img.src;
+                        showElement('qrLoading', false);
+                        qrImage.style.display = 'block';
+                        if (refreshBtn) refreshBtn.disabled = false;
+                    };
+                    img.onerror = () => {
+                        showElement('qrLoading', false);
+                        showElement('qrError', true);
+                        if (refreshBtn) refreshBtn.disabled = false;
+                    };
+                    img.src = `${imageUrl}?t=${Date.now()}`;
+                    
+                    currentToken = data.token;
+                    document.getElementById('currentToken').textContent = 
+                        data.token.substring(0, 20) + '...';
+                    
+                    countdown = 15;
+                } else {
+                    throw new Error(data.message || 'Erreur inconnue');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                retryCount++;
+                
+                if (retryCount <= maxRetries) {
+                    setTimeout(generateQR, 2000);
+                } else {
+                    showElement('qrLoading', false);
+                    showElement('qrError', true);
+                    if (refreshBtn) refreshBtn.disabled = false;
+                }
+            });
+        }
+
+        function updateTimer() {
+            countdown--;
+            document.getElementById('countdown').textContent = countdown;
+            
+            const progress = (countdown / 15) * 100;
+            document.getElementById('timerProgress').style.width = Math.max(0, progress) + '%';
+            
+            if (countdown <= 0) {
+                generateQR();
+            }
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        // Initialisation si connecté
+        if (userId) {
+            generateQR();
+            startTimer();
+        }
+
+        // Event Listeners
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'refreshBtn' || e.target.closest('#refreshBtn')) {
+                generateQR();
+                countdown = 15;
+            }
+            
+            if (e.target.id === 'verifyBtn' || e.target.closest('#verifyBtn')) {
+                if (!currentToken || !userId) {
+                    alert('Token non disponible');
+                    return;
+                }
+                
+                fetch(`${API_BASE}generate_qr.php?action=verify&token=${currentToken}&user_id=${userId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        alert(data.valid ? '✅ Token valide' : '❌ Token invalide');
+                    })
+                    .catch(() => alert('Erreur de vérification'));
+            }
+            
+            if (e.target.id === 'logoutBtn' || e.target.closest('#logoutBtn')) {
+                if (timerInterval) clearInterval(timerInterval);
+                SessionManager.clear();
+                fetch('API/connexion/logout.php')
+                    .finally(() => {
+                        window.location.replace('connexion.html');
+                    });
+            }
+        });
+
+        // Cleanup
+        window.addEventListener('beforeunload', () => {
+            if (timerInterval) clearInterval(timerInterval);
+        });
+    </script>
+</body>
+</html>
