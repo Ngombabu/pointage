@@ -22,6 +22,7 @@ function getDBConnection() {
         );
         return $pdo;
     } catch (PDOException $e) {
+        error_log("Erreur DB: " . $e->getMessage());
         return null;
     }
 }
@@ -31,9 +32,19 @@ function getHeurePointage($pdo, $superviseurId) {
         $stmt = $pdo->prepare("SELECT heure FROM heure WHERE id_superviseur = ?");
         $stmt->execute([$superviseurId]);
         $result = $stmt->fetch();
-        return $result ? $result['heure'] : '07:30:00'; // Heure par défaut
+        return $result ? $result['heure'] : '07:30:00';
     } catch (Exception $e) {
         return '07:30:00';
+    }
+}
+
+function getShopInfo($pdo, $shopId) {
+    try {
+        $stmt = $pdo->prepare("SELECT nom, adresse FROM shop WHERE id = ?");
+        $stmt->execute([$shopId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        return null;
     }
 }
 
@@ -42,7 +53,7 @@ function getPenalite($pdo, $superviseurId) {
         $stmt = $pdo->prepare("SELECT retard FROM penalite WHERE id_superviseur = ?");
         $stmt->execute([$superviseurId]);
         $result = $stmt->fetch();
-        return $result ? floatval($result['retard']) : 2.50; // Pénalité par défaut
+        return $result ? floatval($result['retard']) : 2.50;
     } catch (Exception $e) {
         return 2.50;
     }
@@ -85,6 +96,7 @@ function enregistrerPresence($pdo, $agentId, $shopId, $estEnRetard) {
 
         return ['success' => true, 'presence_id' => $presenceId];
     } catch (Exception $e) {
+        error_log("Erreur enregistrement: " . $e->getMessage());
         return ['success' => false, 'message' => $e->getMessage()];
     }
 }
@@ -95,6 +107,7 @@ function appliquerPenalite($pdo, $agentId, $montant) {
         $stmt->execute([$agentId, $montant]);
         return true;
     } catch (Exception $e) {
+        error_log("Erreur pénalité: " . $e->getMessage());
         return false;
     }
 }
@@ -112,6 +125,22 @@ $action = isset($_GET['action']) ? $_GET['action'] : '';
 $pdo = getDBConnection();
 if (!$pdo) {
     echo json_encode(['success' => false, 'message' => 'Erreur de connexion DB']);
+    exit;
+}
+
+// Action: Vérifier statut et récupérer infos shop
+if ($action === 'status') {
+    $shopInfo = getShopInfo($pdo, $shopId);
+    $heurePointage = getHeurePointage($pdo, $superviseurId);
+    
+    echo json_encode([
+        'success' => true,
+        'superviseur_id' => $superviseurId,
+        'shop_id' => $shopId,
+        'shop_nom' => $shopInfo ? $shopInfo['nom'] : 'Shop inconnu',
+        'shop_adresse' => $shopInfo ? $shopInfo['adresse'] : '',
+        'heure_pointage' => $heurePointage
+    ]);
     exit;
 }
 
@@ -169,7 +198,7 @@ if ($action === 'scan') {
     $heurePointage = getHeurePointage($pdo, $superviseurId);
     $heureActuelle = date('H:i:s');
     
-    // Comparer les heures
+    // Comparer les heures (comparaison string car format H:i:s)
     $estEnRetard = $heureActuelle > $heurePointage;
     
     // Enregistrer la présence
@@ -205,17 +234,5 @@ if ($action === 'scan') {
     ]);
     exit;
 }
-
-// Action: Vérifier statut
-if ($action === 'status') {
-    echo json_encode([
-        'success' => true,
-        'superviseur_id' => $superviseurId,
-        'shop_id' => $shopId,
-        'heure_pointage' => getHeurePointage($pdo, $superviseurId)
-    ]);
-    exit;
-}
-
 echo json_encode(['success' => false, 'message' => 'Action non valide']);
 ?>

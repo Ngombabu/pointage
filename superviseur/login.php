@@ -3,7 +3,7 @@
 session_start();
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Methods: POST, GET');
 header('Access-Control-Allow-Headers: Content-Type');
 
 // Configuration DB
@@ -22,6 +22,7 @@ function getDBConnection() {
         );
         return $pdo;
     } catch (PDOException $e) {
+        error_log("Erreur DB: " . $e->getMessage());
         return null;
     }
 }
@@ -32,10 +33,42 @@ function getShops($pdo, $superviseurId) {
         $stmt->execute([$superviseurId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) {
+        error_log("Erreur shops: " . $e->getMessage());
         return [];
     }
 }
 
+// GET pour récupérer les shops
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'get_shops') {
+    $email = isset($_GET['email']) ? trim($_GET['email']) : '';
+    
+    if (empty($email)) {
+        echo json_encode(['success' => false, 'message' => 'Email requis']);
+        exit;
+    }
+
+    $pdo = getDBConnection();
+    if (!$pdo) {
+        echo json_encode(['success' => false, 'message' => 'Erreur de connexion DB']);
+        exit;
+    }
+
+    // Récupérer l'ID du superviseur
+    $stmt = $pdo->prepare("SELECT id FROM superviseur WHERE email = ?");
+    $stmt->execute([$email]);
+    $superviseur = $stmt->fetch();
+
+    if (!$superviseur) {
+        echo json_encode(['success' => false, 'message' => 'Superviseur non trouvé']);
+        exit;
+    }
+
+    $shops = getShops($pdo, $superviseur['id']);
+    echo json_encode(['success' => true, 'shops' => $shops]);
+    exit;
+}
+
+// POST pour la connexion
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = isset($_POST['email']) ? trim($_POST['email']) : '';
     $password = isset($_POST['password']) ? $_POST['password'] : '';
@@ -63,9 +96,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Vérifier que le shop appartient bien au superviseur
-    $stmt = $pdo->prepare("SELECT id FROM shop WHERE id = ? AND id_superviseur = ?");
+    $stmt = $pdo->prepare("SELECT id, nom FROM shop WHERE id = ? AND id_superviseur = ?");
     $stmt->execute([$shop_id, $superviseur['id']]);
-    if (!$stmt->fetch()) {
+    $shop = $stmt->fetch();
+    
+    if (!$shop) {
         echo json_encode(['success' => false, 'message' => 'Shop non autorisé']);
         exit;
     }
@@ -74,6 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $_SESSION['superviseur_id'] = $superviseur['id'];
     $_SESSION['superviseur_nom'] = $superviseur['nom'] . ' ' . $superviseur['prenom'];
     $_SESSION['shop_id'] = $shop_id;
+    $_SESSION['shop_nom'] = $shop['nom'];
     $_SESSION['logged_in'] = true;
 
     echo json_encode([
@@ -84,33 +120,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// GET pour récupérer les shops
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'get_shops') {
-    $email = isset($_GET['email']) ? trim($_GET['email']) : '';
-    
-    if (empty($email)) {
-        echo json_encode(['success' => false, 'message' => 'Email requis']);
-        exit;
-    }
-
-    $pdo = getDBConnection();
-    if (!$pdo) {
-        echo json_encode(['success' => false, 'message' => 'Erreur DB']);
-        exit;
-    }
-
-    // Récupérer l'ID du superviseur
-    $stmt = $pdo->prepare("SELECT id FROM superviseur WHERE email = ?");
-    $stmt->execute([$email]);
-    $superviseur = $stmt->fetch();
-
-    if (!$superviseur) {
-        echo json_encode(['success' => false, 'message' => 'Superviseur non trouvé']);
-        exit;
-    }
-
-    $shops = getShops($pdo, $superviseur['id']);
-    echo json_encode(['success' => true, 'shops' => $shops]);
-    exit;
-}
+echo json_encode(['success' => false, 'message' => 'Méthode non autorisée']);
 ?>
