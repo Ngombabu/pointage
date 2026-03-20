@@ -1,0 +1,27 @@
+name: Déployer sur InfinityFree
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Récupérer le code
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+      
+      # Envoyer les fichiers via FTP
+      - name: Envoyer via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          local-dir: ./
+          server-dir: ${{ secrets.REMOTE_DIR }}
