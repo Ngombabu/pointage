@@ -68,6 +68,7 @@ function disableNonAdminActions() {
     configButtons.forEach(btn => {
         btn.disabled = true;
         btn.style.opacity = '0.5';
+        btn.title = 'Réservé à l\'administrateur';
     });
 }
 
@@ -152,9 +153,9 @@ async function loadAgents(search = '') {
                         <td>${a.email}</td>
                         <td>${a.telephone || '-'}</td>
                         <td class="action-btns">
-                            <button class="btn-edit" onclick="editAgent(${a.id})">✏️</button>
-                            <button class="btn-delete" onclick="deleteAgent(${a.id})">🗑️</button>
-                            <button class="btn-add" onclick="showAgentRetenues(${a.id})">💰</button>
+                            <button class="btn-edit" onclick="editAgent(${a.id})" title="Modifier">✏️</button>
+                            <button class="btn-delete" onclick="deleteAgent(${a.id})" title="Supprimer">🗑️</button>
+                            <button class="btn-add" onclick="showAgentRetenues(${a.id})" title="Voir retenues">💰</button>
                         </td>
                     </tr>
                 `).join('');
@@ -172,8 +173,9 @@ async function loadAgents(search = '') {
                         <td>${a.telephone || '-'}</td>
                         <td>Superviseur #${a.id_superviseur}</td>
                         <td class="action-btns">
-                            <button class="btn-edit" onclick="editAgent(${a.id})">✏️</button>
-                            <button class="btn-delete" onclick="deleteAgent(${a.id})">🗑️</button>
+                            <button class="btn-edit" onclick="editAgent(${a.id})" title="Modifier">✏️</button>
+                            <button class="btn-delete" onclick="deleteAgent(${a.id})" title="Supprimer">🗑️</button>
+                            <button class="btn-add" onclick="showAgentRetenues(${a.id})" title="Voir retenues">💰</button>
                         </td>
                     </tr>
                 `).join('');
@@ -203,8 +205,8 @@ async function loadShops() {
                     <td>${s.adresse}</td>
                     <td>Superviseur #${s.id_superviseur}</td>
                     <td class="action-btns">
-                        <button class="btn-edit" onclick="editShop(${s.id})">✏️</button>
-                        <button class="btn-delete" onclick="deleteShop(${s.id})">🗑️</button>
+                        <button class="btn-edit" onclick="editShop(${s.id})" title="Modifier">✏️</button>
+                        <button class="btn-delete" onclick="deleteShop(${s.id})" title="Supprimer">🗑️</button>
                     </td>
                 </tr>
             `).join('');
@@ -230,21 +232,24 @@ async function loadConfig() {
     }
 }
 
-// Charger les années
+// Charger les années pour les sélecteurs
 function loadYears() {
-    const yearSelect = document.getElementById('retenueAnnee');
-    if (!yearSelect) return;
-    
+    const yearSelects = ['presenceYear', 'retardYear', 'retenueYear'];
     const currentYear = new Date().getFullYear();
-    yearSelect.innerHTML = '';
     
-    for (let year = currentYear - 2; year <= currentYear + 2; year++) {
-        const option = document.createElement('option');
-        option.value = year;
-        option.textContent = year;
-        if (year === currentYear) option.selected = true;
-        yearSelect.appendChild(option);
-    }
+    yearSelects.forEach(selectId => {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+        
+        select.innerHTML = '';
+        for (let year = currentYear - 2; year <= currentYear + 2; year++) {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year;
+            if (year === currentYear) option.selected = true;
+            select.appendChild(option);
+        }
+    });
 }
 
 // Charger retenues mensuelles
@@ -253,9 +258,19 @@ async function loadRetenuesMensuelles() {
     const annee = document.getElementById('retenueAnnee')?.value || new Date().getFullYear();
     
     try {
+        showAlert('Chargement des retenues...', 'success');
+        
         const response = await fetch(`api/retenues.php?mois=${mois}&annee=${annee}`);
         if (!response.ok) throw new Error('Erreur réseau');
-        const data = await response.json();
+        
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error('Réponse non-JSON:', text.substring(0, 200));
+            throw new Error('Réponse serveur invalide');
+        }
         
         if (data.success) {
             document.getElementById('totalRetenuesMois').textContent = data.total || 0;
@@ -263,22 +278,79 @@ async function loadRetenuesMensuelles() {
             
             const tbody = document.getElementById('retenuesTableBody');
             if (tbody) {
-                tbody.innerHTML = data.retenues.map(r => `
-                    <tr>
-                        <td>${r.agent_nom || 'Agent'} ${r.agent_prenom || ''}</td>
-                        <td>${new Date(r.moi).toLocaleDateString('fr-FR')}</td>
-                        <td>${r.montant} €</td>
-                        <td>${r.motif || 'Retard automatique'}</td>
-                        <td class="action-btns">
-                            <button class="btn-delete" onclick="deleteRetenue(${r.id})">🗑️</button>
-                        </td>
-                    </tr>
-                `).join('');
+                if (data.retenues && data.retenues.length > 0) {
+                    tbody.innerHTML = data.retenues.map(r => `
+                        <tr>
+                            <td>${r.agent_nom || 'Agent'}</td>
+                            <td>${r.date_formatee || new Date(r.moi).toLocaleDateString('fr-FR')}</td>
+                            <td><strong>${r.montant} €</strong></td>
+                            <td>${r.motif || 'Retard automatique'}</td>
+                            <td>${r.shop || '-'}</td>
+                            <td class="action-btns">
+                                <button class="btn-delete" onclick="deleteRetenue(${r.id})" title="Supprimer">🗑️</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Aucune retenue pour ce mois</td></tr>';
+                }
             }
+            
+            // Afficher les stats par agent si disponibles
+            if (data.stats_par_agent && data.stats_par_agent.length > 0) {
+                showAgentStats(data.stats_par_agent);
+            }
+        } else {
+            showAlert(data.message || 'Erreur de chargement', 'error');
         }
     } catch (error) {
         console.error('Erreur retenues:', error);
+        showAlert('Erreur lors du chargement des retenues', 'error');
     }
+}
+
+// Afficher les statistiques par agent
+function showAgentStats(stats) {
+    const container = document.getElementById('agentStatsContainer');
+    if (!container) {
+        // Créer le conteneur s'il n'existe pas
+        const statsDiv = document.createElement('div');
+        statsDiv.id = 'agentStatsContainer';
+        statsDiv.className = 'stats-grid';
+        statsDiv.style.marginBottom = '2rem';
+        
+        const section = document.querySelector('#section-retenues .section-card');
+        if (section) {
+            section.insertBefore(statsDiv, section.querySelector('.table-container'));
+        }
+    }
+    
+    const statsContainer = document.getElementById('agentStatsContainer');
+    if (statsContainer) {
+        statsContainer.innerHTML = stats.map(s => `
+            <div class="stat-card" onclick="filterByAgent(${s.agent_id})" style="cursor: pointer;">
+                <div class="stat-label">${s.nom}</div>
+                <div class="stat-value">${s.montant} €</div>
+                <div class="stat-sub">${s.total} retenue(s)</div>
+            </div>
+        `).join('');
+    }
+}
+
+// Filtrer par agent
+function filterByAgent(agentId) {
+    const mois = document.getElementById('retenueMois')?.value || '01';
+    const annee = document.getElementById('retenueAnnee')?.value || new Date().getFullYear();
+    
+    fetch(`api/retenues.php?mois=${mois}&annee=${annee}&agent_id=${agentId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showAlert(`Affichage des retenues pour l'agent`, 'success');
+                loadRetenuesMensuelles(); // Recharger avec le filtre
+            }
+        })
+        .catch(() => showAlert('Erreur de filtrage', 'error'));
 }
 
 // Rechercher agents
@@ -303,6 +375,11 @@ function initNavigation() {
             const targetSection = document.getElementById(`section-${section}`);
             if (targetSection) {
                 targetSection.classList.add('active');
+                
+                // Recharger les données si nécessaire
+                if (section === 'retenues') {
+                    loadRetenuesMensuelles();
+                }
             }
         });
     });
@@ -318,6 +395,20 @@ function initEvents() {
     const loadRetenuesBtn = document.getElementById('loadRetenuesBtn');
     if (loadRetenuesBtn) {
         loadRetenuesBtn.addEventListener('click', loadRetenuesMensuelles);
+    }
+    
+    const searchBtn = document.querySelector('#section-dashboard button');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', searchAgents);
+    }
+    
+    const searchInput = document.getElementById('searchAgent');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchAgents();
+            }
+        });
     }
 }
 
@@ -346,9 +437,11 @@ function openModal(type, id = null) {
     modalTitle.textContent = id ? 'Modifier' : 'Ajouter';
     
     let fields = '';
+    let title = '';
     
     switch(type) {
         case 'superviseur':
+            title = 'Superviseur';
             fields = `
                 <div class="form-group">
                     <label>Nom</label>
@@ -378,6 +471,7 @@ function openModal(type, id = null) {
             break;
             
         case 'agent':
+            title = 'Agent';
             fields = `
                 <div class="form-group">
                     <label>Nom</label>
@@ -411,6 +505,7 @@ function openModal(type, id = null) {
             break;
             
         case 'shop':
+            title = 'Shop';
             fields = `
                 <div class="form-group">
                     <label>Nom du shop</label>
@@ -428,6 +523,7 @@ function openModal(type, id = null) {
             break;
             
         case 'retenue':
+            title = 'Retenue manuelle';
             fields = `
                 <div class="form-group">
                     <label>ID Agent</label>
@@ -445,6 +541,7 @@ function openModal(type, id = null) {
             break;
     }
     
+    modalTitle.innerHTML = `${id ? '✏️ Modifier' : '➕ Ajouter'} ${title}`;
     modalFields.innerHTML = fields;
     modal.classList.add('active');
     
@@ -482,6 +579,11 @@ document.addEventListener('submit', async (e) => {
             formData.append(fieldName, input.value);
         });
         
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="loading-spinner"></span> Enregistrement...';
+        
         try {
             const response = await fetch('api/crud.php', {
                 method: 'POST',
@@ -506,7 +608,10 @@ document.addEventListener('submit', async (e) => {
             }
         } catch (error) {
             console.error('Erreur:', error);
-            showAlert('Erreur de connexion', 'error');
+            showAlert('Erreur de connexion au serveur', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
         }
     }
 });
@@ -556,7 +661,7 @@ async function deleteSuperviseur(id) {
         }
     } catch (error) {
         console.error('Erreur:', error);
-        showAlert('Erreur de connexion', 'error');
+        showAlert('Erreur de connexion au serveur', 'error');
     }
 }
 
@@ -581,7 +686,7 @@ async function deleteAgent(id) {
         }
     } catch (error) {
         console.error('Erreur:', error);
-        showAlert('Erreur de connexion', 'error');
+        showAlert('Erreur de connexion au serveur', 'error');
     }
 }
 
@@ -606,7 +711,7 @@ async function deleteShop(id) {
         }
     } catch (error) {
         console.error('Erreur:', error);
-        showAlert('Erreur de connexion', 'error');
+        showAlert('Erreur de connexion au serveur', 'error');
     }
 }
 
@@ -630,7 +735,7 @@ async function deleteRetenue(id) {
         }
     } catch (error) {
         console.error('Erreur:', error);
-        showAlert('Erreur de connexion', 'error');
+        showAlert('Erreur de connexion au serveur', 'error');
     }
 }
 
@@ -666,31 +771,92 @@ function editConfig(type) {
             showAlert(data.message || 'Erreur', 'error');
         }
     })
-    .catch(() => showAlert('Erreur de connexion', 'error'));
+    .catch(() => showAlert('Erreur de connexion au serveur', 'error'));
 }
 
 // Voir les retenues d'un agent
 async function showAgentRetenues(agentId) {
     try {
+        showAlert('Chargement des données...', 'success');
+        
         const response = await fetch(`api/get_agent_retenues.php?agent_id=${agentId}`);
-        const data = await response.json();
+        if (!response.ok) {
+            throw new Error('Erreur réseau');
+        }
+        
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error('Réponse non-JSON:', text.substring(0, 200));
+            throw new Error('Réponse serveur invalide');
+        }
         
         if (data.success) {
-            // Créer un modal pour afficher les détails
-            const details = data.details.map(r => `
-                <tr>
-                    <td>${new Date(r.moi).toLocaleDateString('fr-FR')}</td>
-                    <td>${r.montant} €</td>
-                    <td>${r.motif || 'Retard'}</td>
-                </tr>
-            `).join('');
-            
+            // Formater les détails
+            const detailsHtml = data.details && data.details.length > 0 
+                ? data.details.map(r => `
+                    <tr>
+                        <td>${r.date_formatee}</td>
+                        <td><strong>${r.montant} €</strong></td>
+                        <td>${r.motif}</td>
+                        <td>${r.date_retard || '-'}</td>
+                    </tr>
+                `).join('')
+                : '<tr><td colspan="4" style="text-align: center;">Aucune retenue</td></tr>';
+
+            // Formater les stats mensuelles
+            const mensuelHtml = data.mensuel && data.mensuel.length > 0
+                ? data.mensuel.map(m => `
+                    <tr>
+                        <td>${m.mois}</td>
+                        <td>${m.nombre}</td>
+                        <td><strong>${m.total} €</strong></td>
+                    </tr>
+                `).join('')
+                : '<tr><td colspan="3" style="text-align: center;">Aucune donnée mensuelle</td></tr>';
+
             const modalHtml = `
-                <div class="modal active" id="agentModal">
-                    <div class="modal-content">
+                <div class="modal active" id="agentModal" style="display: flex; z-index: 2000;">
+                    <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
                         <span class="modal-close" onclick="document.getElementById('agentModal').remove()">&times;</span>
-                        <h3 class="modal-title">Retenues de ${data.agent.nom} ${data.agent.prenom}</h3>
-                        <p><strong>Total: ${data.total_global} €</strong></p>
+                        <h3 class="modal-title">Retenues de ${data.agent.prenom} ${data.agent.nom}</h3>
+                        
+                        <div style="background: #e6f0ff; padding: 1.5rem; border-radius: 12px; margin: 1rem 0;">
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                                <div>
+                                    <div style="color: #64748b; font-size: 0.9rem;">Total</div>
+                                    <div style="font-size: 1.5rem; font-weight: 600; color: #2563eb;">${data.stats.total_global} €</div>
+                                </div>
+                                <div>
+                                    <div style="color: #64748b; font-size: 0.9rem;">Nombre</div>
+                                    <div style="font-size: 1.5rem; font-weight: 600;">${data.stats.nombre_total}</div>
+                                </div>
+                                <div>
+                                    <div style="color: #64748b; font-size: 0.9rem;">Moyenne</div>
+                                    <div style="font-size: 1.5rem; font-weight: 600;">${data.stats.moyenne} €</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 style="margin: 1.5rem 0 1rem;">📊 Résumé mensuel</h4>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Mois</th>
+                                        <th>Nombre</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${mensuelHtml}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h4 style="margin: 1.5rem 0 1rem;">📋 Détail des retenues</h4>
                         <div class="table-container">
                             <table>
                                 <thead>
@@ -698,27 +864,334 @@ async function showAgentRetenues(agentId) {
                                         <th>Date</th>
                                         <th>Montant</th>
                                         <th>Motif</th>
+                                        <th>Date retard</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${details || '<tr><td colspan="3">Aucune retenue</td></tr>'}
+                                    ${detailsHtml}
                                 </tbody>
                             </table>
+                        </div>
+
+                        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                            <button class="btn-save" onclick="document.getElementById('agentModal').remove()" style="flex: 1;">Fermer</button>
+                            <button class="btn-delete" onclick="openModal('retenue', null, ${agentId})" style="flex: 1;">➕ Ajouter retenue</button>
                         </div>
                     </div>
                 </div>
             `;
             
             document.body.insertAdjacentHTML('beforeend', modalHtml);
+        } else {
+            showAlert(data.message || 'Erreur lors du chargement', 'error');
         }
     } catch (error) {
         console.error('Erreur:', error);
-        showAlert('Erreur lors du chargement', 'error');
+        showAlert('Erreur de connexion au serveur', 'error');
     }
 }
 
-// Charger les données pour édition
+// Charger les données pour édition (à implémenter si besoin)
 async function loadDataForEdit(type, id) {
-    // Cette fonction serait appelée pour pré-remplir le formulaire lors de l'édition
-    console.log('Chargement des données pour', type, id);
+    try {
+        let endpoint = '';
+        switch(type) {
+            case 'agent':
+                endpoint = 'agents.php';
+                break;
+            case 'shop':
+                endpoint = 'shops.php';
+                break;
+            case 'superviseur':
+                endpoint = 'superviseurs.php';
+                break;
+            default:
+                return;
+        }
+        
+        const response = await fetch(`api/${endpoint}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            let item = null;
+            if (type === 'agent') {
+                item = data.agents.find(a => a.id == id);
+            } else if (type === 'shop') {
+                item = data.shops.find(s => s.id == id);
+            } else if (type === 'superviseur') {
+                item = data.superviseurs.find(s => s.id == id);
+            }
+            
+            if (item) {
+                // Remplir les champs
+                Object.keys(item).forEach(key => {
+                    const input = document.getElementById(`input${key.charAt(0).toUpperCase() + key.slice(1)}`);
+                    if (input && item[key]) {
+                        input.value = item[key];
+                    }
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Erreur chargement données:', error);
+    }
 }
+
+// Export des fonctions globales
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.editAgent = editAgent;
+window.editShop = editShop;
+window.editSuperviseur = editSuperviseur;
+window.deleteSuperviseur = deleteSuperviseur;
+window.deleteAgent = deleteAgent;
+window.deleteShop = deleteShop;
+window.deleteRetenue = deleteRetenue;
+window.editConfig = editConfig;
+window.showAgentRetenues = showAgentRetenues;
+window.searchAgents = searchAgents;
+window.loadRetenuesMensuelles = loadRetenuesMensuelles;
+window.filterByAgent = filterByAgent;
+
+// ================ SECTION CONNEXION ================
+
+// Charger le statut de connexion
+async function loadConnexionStatus() {
+    try {
+        const response = await fetch('api/connexion.php?action=get_status');
+        const data = await response.json();
+        
+        if (data.success) {
+            const status = data.status;
+            const toggle = document.getElementById('connexionToggle');
+            const label = document.getElementById('toggleLabel');
+            const statusDisplay = document.getElementById('connexionStatus');
+            const lastModified = document.getElementById('lastModified');
+            
+            statusDisplay.textContent = status;
+            statusDisplay.style.color = status === 'ON' ? '#22c55e' : '#ef4444';
+            
+            toggle.checked = status === 'ON';
+            label.textContent = status === 'ON' ? 'Système ouvert (ON)' : 'Système fermé (OFF)';
+            
+            if (data.last_modified_by) {
+                lastModified.textContent = `Par ${data.last_modified_by}`;
+            }
+        }
+    } catch (error) {
+        console.error('Erreur chargement statut:', error);
+    }
+}
+
+// Basculer le statut de connexion
+async function toggleConnexion() {
+    if (!currentUser?.is_first) {
+        showAlert('Seul l\'administrateur peut modifier le statut de connexion', 'error');
+        document.getElementById('connexionToggle').checked = !document.getElementById('connexionToggle').checked;
+        return;
+    }
+    
+    const toggle = document.getElementById('connexionToggle');
+    const newStatus = toggle.checked ? 'ON' : 'OFF';
+    
+    try {
+        const formData = new FormData();
+        formData.append('status', newStatus);
+        
+        const response = await fetch('api/connexion.php?action=toggle', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showAlert(`Système ${newStatus === 'ON' ? 'ouvert' : 'fermé'}`, 'success');
+            loadConnexionStatus();
+        } else {
+            showAlert(data.message || 'Erreur', 'error');
+            toggle.checked = !toggle.checked;
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        showAlert('Erreur de connexion', 'error');
+        toggle.checked = !toggle.checked;
+    }
+}
+
+// ================ SECTION RETARDS ================
+
+// Charger les années pour les sélecteurs (ajouter à loadYears)
+function loadYears() {
+    const yearSelects = ['presenceYear', 'retardYear', 'retenueYear', 'retardAnnee'];
+    const currentYear = new Date().getFullYear();
+    
+    yearSelects.forEach(selectId => {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+        
+        select.innerHTML = '';
+        for (let year = currentYear - 2; year <= currentYear + 2; year++) {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year;
+            if (year === currentYear) option.selected = true;
+            select.appendChild(option);
+        }
+    });
+}
+
+// Charger les retards
+async function loadRetards() {
+    const mois = document.getElementById('retardMois')?.value || '01';
+    const annee = document.getElementById('retardAnnee')?.value || new Date().getFullYear();
+    
+    try {
+        showAlert('Chargement des retards...', 'success');
+        
+        const response = await fetch(`api/retards.php?mois=${mois}&annee=${annee}`);
+        if (!response.ok) throw new Error('Erreur réseau');
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Mettre à jour les stats
+            document.getElementById('totalRetards').textContent = data.stats.total_retards;
+            document.getElementById('totalMinutesRetards').textContent = data.stats.total_minutes;
+            document.getElementById('totalPenalitesRetards').textContent = data.stats.total_penalites + ' €';
+            
+            // Mettre à jour le tableau
+            const tbody = document.getElementById('retardsTableBody');
+            if (tbody) {
+                if (data.retards && data.retards.length > 0) {
+                    tbody.innerHTML = data.retards.map(r => `
+                        <tr>
+                            <td>${r.agent_nom}</td>
+                            <td>${r.date_formatee}</td>
+                            <td>${new Date(r.date).toLocaleTimeString('fr-FR')}</td>
+                            <td>07:00</td>
+                            <td><strong>${r.minutes_retard} min</strong></td>
+                            <td>${r.shop}</td>
+                            <td class="action-btns">
+                                <button class="btn-view" onclick="showAgentRetenues(${r.id_agent})" title="Voir retenues">💰</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Aucun retard pour ce mois</td></tr>';
+                }
+            }
+            
+            // Afficher les stats par jour
+            showDailyStats(data.retards);
+        } else {
+            showAlert(data.message || 'Erreur de chargement', 'error');
+        }
+    } catch (error) {
+        console.error('Erreur retards:', error);
+        showAlert('Erreur lors du chargement des retards', 'error');
+    }
+}
+
+// Afficher les statistiques par jour
+function showDailyStats(retards) {
+    const container = document.getElementById('dailyStatsContainer');
+    if (!container) {
+        // Créer le conteneur
+        const statsDiv = document.createElement('div');
+        statsDiv.id = 'dailyStatsContainer';
+        statsDiv.className = 'stats-grid';
+        statsDiv.style.marginBottom = '2rem';
+        
+        const section = document.querySelector('#section-retards .section-card');
+        if (section) {
+            section.insertBefore(statsDiv, section.querySelector('.table-container'));
+        }
+    }
+    
+    const statsContainer = document.getElementById('dailyStatsContainer');
+    if (!statsContainer || !retards) return;
+    
+    // Grouper par jour
+    const daily = {};
+    retards.forEach(r => {
+        const day = new Date(r.date).toLocaleDateString('fr-FR');
+        if (!daily[day]) {
+            daily[day] = {
+                date: day,
+                count: 0,
+                minutes: 0
+            };
+        }
+        daily[day].count++;
+        daily[day].minutes += r.minutes_retard;
+    });
+    
+    const dailyArray = Object.values(daily).slice(0, 5); // 5 derniers jours
+    
+    statsContainer.innerHTML = dailyArray.map(d => `
+        <div class="stat-card">
+            <div class="stat-label">${d.date}</div>
+            <div class="stat-value">${d.count}</div>
+            <div class="stat-sub">${d.minutes} min de retard</div>
+        </div>
+    `).join('');
+}
+
+// Ajouter à initEvents
+function initEvents() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+    }
+    
+    const loadRetenuesBtn = document.getElementById('loadRetenuesBtn');
+    if (loadRetenuesBtn) {
+        loadRetenuesBtn.addEventListener('click', loadRetenuesMensuelles);
+    }
+    
+    const searchBtn = document.querySelector('#section-dashboard button');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', searchAgents);
+    }
+    
+    const searchInput = document.getElementById('searchAgent');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchAgents();
+            }
+        });
+    }
+    
+    // Ajouter l'événement pour le bouton de chargement des retards
+    const loadRetardsBtn = document.querySelector('#section-retards button');
+    if (loadRetardsBtn) {
+        loadRetardsBtn.addEventListener('click', loadRetards);
+    }
+}
+
+// Appeler loadConnexionStatus après l'initialisation
+// Ajouter cette ligne dans DOMContentLoaded
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('Dashboard initialisé');
+    await checkSession();
+    await loadStats();
+    await loadSuperviseurs();
+    await loadAgents();
+    await loadShops();
+    await loadConfig();
+    await loadConnexionStatus(); // Ajouter cette ligne
+    loadYears();
+    
+    initNavigation();
+    initEvents();
+    
+    // Charger les données par défaut pour les sections
+    loadRetards();
+    loadRetenuesMensuelles();
+});
+
+// Exporter les nouvelles fonctions
+window.toggleConnexion = toggleConnexion;
+window.loadRetards = loadRetards;

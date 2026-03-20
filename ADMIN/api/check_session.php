@@ -2,7 +2,7 @@
 // ADMIN/api/check_session.php
 session_start();
 header('Content-Type: application/json');
-require_once '../../API/connexion/db.php';
+require_once __DIR__ . '/../../API/connexion/db.php';
 
 if (!isset($_SESSION['admin_id']) || !isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     sendJSON(false, 'Non connecté');

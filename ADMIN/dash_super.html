@@ -153,7 +153,7 @@
             gap: 0.5rem;
             flex: 1;
             justify-content: center;
-            min-width: 150px;
+            min-width: 120px;
         }
 
         .nav-btn:hover {
@@ -219,6 +219,12 @@
             padding: 1.5rem;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             border: 1px solid #e2e8f0;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
         }
 
         .stat-label {
@@ -231,6 +237,66 @@
             font-size: 2rem;
             font-weight: 600;
             color: #1e293b;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ef4444;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #22c55e;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        .toggle-label {
+            margin-left: 10px;
+            font-weight: 500;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 12px;
         }
 
         /* Barre de recherche */
@@ -307,7 +373,7 @@
             flex-wrap: wrap;
         }
 
-        .btn-edit, .btn-delete, .btn-add {
+        .btn-edit, .btn-delete, .btn-add, .btn-view {
             padding: 0.5rem 1rem;
             border: none;
             border-radius: 8px;
@@ -343,6 +409,16 @@
 
         .btn-add:hover {
             background: #22c55e;
+            color: white;
+        }
+
+        .btn-view {
+            background: #8b5cf620;
+            color: #7c3aed;
+        }
+
+        .btn-view:hover {
+            background: #7c3aed;
             color: white;
         }
 
@@ -456,10 +532,27 @@
 
         .alert.success { border-left: 4px solid #22c55e; }
         .alert.error { border-left: 4px solid #ef4444; }
+        .alert.warning { border-left: 4px solid #eab308; }
 
         @keyframes slideInRight {
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* Responsive */
@@ -470,7 +563,7 @@
             }
             
             .nav-btn {
-                min-width: 100%;
+                min-width: calc(50% - 0.5rem);
             }
             
             .search-box {
@@ -526,6 +619,12 @@
             </button>
             <button class="nav-btn" data-section="config">
                 ⚙️ Configuration
+            </button>
+            <button class="nav-btn" data-section="connexion">
+                🔌 Connexion
+            </button>
+            <button class="nav-btn" data-section="retards">
+                ⏰ Retards
             </button>
             <button class="nav-btn" data-section="retenues">
                 💰 Retenues
@@ -696,6 +795,100 @@
             </div>
         </div>
 
+        <!-- SECTION: CONNEXION -->
+        <div id="section-connexion" class="admin-section">
+            <div class="section-card">
+                <h2 class="section-title">🔌 Gestion des connexions</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Statut du système</div>
+                        <div class="stat-value" id="connexionStatus">ON</div>
+                        <div class="toggle-container" style="margin-top: 1rem;">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="connexionToggle" onchange="toggleConnexion()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-label" id="toggleLabel">Activer les connexions</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Dernière modification</div>
+                        <div class="stat-value" id="lastModified">-</div>
+                    </div>
+                </div>
+
+                <div style="background: #f8fafc; border-radius: 16px; padding: 1.5rem; margin-top: 1rem;">
+                    <h3 style="margin-bottom: 1rem;">Informations</h3>
+                    <p>✓ Lorsque le système est <strong style="color: #22c55e">ON</strong>, les agents peuvent se connecter</p>
+                    <p>✗ Lorsque le système est <strong style="color: #ef4444">OFF</strong>, les connexions sont bloquées</p>
+                    <p>⏰ Les connexions sont normalement autorisées de 18h à 5h</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: RETARDS -->
+        <div id="section-retards" class="admin-section">
+            <div class="section-card">
+                <h2 class="section-title">⏰ Gestion des retards</h2>
+                
+                <div class="search-box">
+                    <select id="retardMois">
+                        <option value="01">Janvier</option>
+                        <option value="02">Février</option>
+                        <option value="03">Mars</option>
+                        <option value="04">Avril</option>
+                        <option value="05">Mai</option>
+                        <option value="06">Juin</option>
+                        <option value="07">Juillet</option>
+                        <option value="08">Août</option>
+                        <option value="09">Septembre</option>
+                        <option value="10">Octobre</option>
+                        <option value="11">Novembre</option>
+                        <option value="12">Décembre</option>
+                    </select>
+                    <select id="retardAnnee"></select>
+                    <button onclick="loadRetards()">Charger</button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total retards</div>
+                        <div class="stat-value" id="totalRetards">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Minutes de retard</div>
+                        <div class="stat-value" id="totalMinutesRetards">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Pénalités générées</div>
+                        <div class="stat-value" id="totalPenalitesRetards">0 €</div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Agent</th>
+                                <th>Date</th>
+                                <th>Heure</th>
+                                <th>Heure limite</th>
+                                <th>Minutes retard</th>
+                                <th>Shop</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="retardsTableBody">
+                            <tr>
+                                <td colspan="7" style="text-align: center;">Chargement...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <!-- SECTION: RETENUES -->
         <div id="section-retenues" class="admin-section">
             <div class="section-card">
@@ -722,7 +915,7 @@
 
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-label">Total retenues du mois</div>
+                        <div class="stat-label">Total retenues</div>
                         <div class="stat-value" id="totalRetenuesMois">0</div>
                     </div>
                     <div class="stat-card">
@@ -743,16 +936,19 @@
                                 <th>Date</th>
                                 <th>Montant</th>
                                 <th>Motif</th>
+                                <th>Shop</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="retenuesTableBody">
                             <tr>
-                                <td colspan="5" style="text-align: center;">Chargement...</td>
+                                <td colspan="6" style="text-align: center;">Chargement...</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+
+                <div id="agentStatsContainer" class="stats-grid" style="margin-top: 2rem;"></div>
             </div>
         </div>
     </div>
