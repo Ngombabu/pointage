@@ -216,7 +216,7 @@ if ($action === 'scan') {
         if (!aDejaRetardAujourdhui($pdo, $agentId)) {
             $montantPenalite = getPenalite($pdo, $superviseurId);
             appliquerPenalite($pdo, $agentId, $montantPenalite);
-            $penaliteMessage = " Pénalité de {$montantPenalite}€ appliquée.";
+            $penaliteMessage = " Pénalité de {$montantPenalite}$ appliquée.";
         }
     }
 

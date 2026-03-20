@@ -246,14 +246,14 @@ async function loadRetenues() {
         if (data.success) {
             document.getElementById('totalRetenues').textContent = data.total || 0;
             document.getElementById('retenuesPeriod').textContent = `pour ${getMonthName(month)} ${year}`;
-            document.getElementById('montantTotal').textContent = `${data.montant_total || 0} €`;
+            document.getElementById('montantTotal').textContent = `${data.montant_total || 0} $`;
             
             const tbody = document.getElementById('retenuesTableBody');
             if (data.retenues && data.retenues.length > 0) {
                 tbody.innerHTML = data.retenues.map(r => `
                     <tr>
                         <td>${formatDate(r.moi)}</td>
-                        <td><strong>${r.montant} €</strong></td>
+                        <td><strong>${r.montant} $</strong></td>
                         <td>Retard du ${formatDate(r.date_retard)}</td>
                         <td>
                             <span class="badge badge-danger">💰 Retenue</span>

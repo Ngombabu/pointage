@@ -39,6 +39,16 @@
             overflow-x: auto;
             white-space: nowrap;
             -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+
+        .profile-tabs::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .profile-tabs::-webkit-scrollbar-thumb {
+            background: var(--gray-300);
+            border-radius: 4px;
         }
 
         .tab-btn {
@@ -51,9 +61,10 @@
             cursor: pointer;
             transition: all 0.3s;
             font-size: 0.95rem;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            flex-shrink: 0;
         }
 
         .tab-btn:hover {
@@ -82,10 +93,10 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Cartes d'information */
+        /* Grille de stats améliorée */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1rem;
             margin-bottom: 2rem;
         }
@@ -96,7 +107,9 @@
             padding: 1.5rem;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             border: 1px solid var(--gray-200);
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
+            overflow: hidden; /* Empêche le contenu de déborder */
+            min-width: 0; /* Permet au texte de se couper correctement */
         }
 
         .stat-card:hover {
@@ -113,6 +126,7 @@
             align-items: center;
             justify-content: center;
             margin-bottom: 1rem;
+            flex-shrink: 0;
         }
 
         .stat-icon svg {
@@ -125,31 +139,43 @@
             color: var(--gray-500);
             font-size: 0.9rem;
             margin-bottom: 0.3rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .stat-value {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 600;
             color: var(--gray-900);
             line-height: 1.2;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;
         }
 
         .stat-sub {
             color: var(--gray-500);
             font-size: 0.85rem;
             margin-top: 0.3rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        /* Formulaire d'édition */
+        /* Formulaire d'édition amélioré */
         .edit-form {
             background: white;
             border-radius: 20px;
             padding: 2rem;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            max-width: 100%;
+            overflow: hidden;
         }
 
         .form-group {
             margin-bottom: 1.5rem;
+            width: 100%;
         }
 
         .form-group label {
@@ -157,6 +183,7 @@
             margin-bottom: 0.5rem;
             font-weight: 500;
             color: var(--gray-700);
+            font-size: 0.95rem;
         }
 
         .form-group input, .form-group select {
@@ -167,6 +194,7 @@
             font-size: 1rem;
             transition: all 0.3s;
             background: var(--gray-50);
+            box-sizing: border-box; /* Important pour que le padding ne dépasse pas */
         }
 
         .form-group input:focus, .form-group select:focus {
@@ -188,6 +216,16 @@
             gap: 1rem;
         }
 
+        /* Titres de section */
+        .section-subtitle {
+            margin: 1.5rem 0 1rem;
+            color: var(--gray-700);
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--gray-200);
+        }
+
         /* Sélecteur de mois */
         .month-selector {
             display: flex;
@@ -198,10 +236,12 @@
             padding: 1rem;
             border-radius: 15px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            flex-wrap: wrap;
         }
 
         .month-selector select {
             flex: 1;
+            min-width: 120px;
             padding: 0.8rem;
             border: 2px solid var(--gray-200);
             border-radius: 10px;
@@ -218,6 +258,8 @@
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.2s;
+            font-weight: 500;
+            white-space: nowrap;
         }
 
         .month-btn:hover {
@@ -225,18 +267,20 @@
             transform: translateY(-2px);
         }
 
-        /* Tableaux */
+        /* Tableaux améliorés */
         .table-container {
             background: white;
             border-radius: 20px;
             padding: 1.5rem;
             overflow-x: auto;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-top: 1.5rem;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 600px; /* Empêche le tableau de devenir trop petit */
         }
 
         th {
@@ -245,12 +289,17 @@
             color: var(--gray-500);
             font-weight: 500;
             border-bottom: 2px solid var(--gray-200);
+            white-space: nowrap;
         }
 
         td {
             padding: 1rem;
             border-bottom: 1px solid var(--gray-200);
             color: var(--gray-700);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
         }
 
         tr:hover td {
@@ -264,6 +313,7 @@
             font-size: 0.8rem;
             font-weight: 500;
             display: inline-block;
+            white-space: nowrap;
         }
 
         .badge-success {
@@ -281,7 +331,7 @@
             color: #dc2626;
         }
 
-        /* Boutons */
+        /* Bouton de sauvegarde */
         .btn-save {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
@@ -293,9 +343,10 @@
             cursor: pointer;
             transition: all 0.3s;
             width: 100%;
+            margin-top: 1rem;
         }
 
-        .btn-save:hover {
+        .btn-save:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(37,99,235,0.3);
         }
@@ -306,12 +357,13 @@
             transform: none;
         }
 
-        /* Message de succès/erreur */
+        /* Message d'alerte */
         .alert-message {
             padding: 1rem;
             border-radius: 12px;
             margin-bottom: 1rem;
             animation: slideIn 0.3s ease;
+            word-wrap: break-word;
         }
 
         .alert-success {
@@ -340,10 +392,52 @@
             border-radius: 50%;
             border-top-color: white;
             animation: spin 1s ease-in-out infinite;
+            margin-right: 0.5rem;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
+        }
+
+        /* Message quand aucune donnée */
+        .no-data {
+            text-align: center;
+            color: var(--gray-500);
+            padding: 2rem;
+            font-style: italic;
+        }
+
+        /* Conteneur d'informations utilisateur dans le header */
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--gray-100);
+            padding: 0.3rem 0.3rem 0.3rem 0.8rem;
+            border-radius: 30px;
+            border: 1px solid var(--gray-200);
+        }
+
+        .user-badge .avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-badge .name {
+            color: var(--gray-700);
+            font-weight: 500;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         /* Responsive */
@@ -351,21 +445,65 @@
             .profile-tabs {
                 padding: 0.3rem;
             }
+            
             .tab-btn {
                 padding: 0.6rem 1rem;
                 font-size: 0.85rem;
             }
+            
             .form-row {
                 grid-template-columns: 1fr;
+                gap: 0.5rem;
             }
+            
             .stats-grid {
                 grid-template-columns: 1fr;
             }
+            
             .month-selector {
                 flex-direction: column;
+                align-items: stretch;
             }
+            
             .month-selector select {
                 width: 100%;
+            }
+            
+            .month-btn {
+                width: 100%;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            
+            .user-badge .name {
+                max-width: 100px;
+            }
+        }
+
+        /* Pour très petits écrans */
+        @media (max-width: 480px) {
+            .stat-card {
+                padding: 1rem;
+            }
+            
+            .stat-icon {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .stat-icon svg {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .stat-value {
+                font-size: 1.3rem;
+            }
+            
+            .edit-form {
+                padding: 1.5rem;
             }
         }
     </style>
@@ -467,7 +605,7 @@
             <!-- SECTION 2: MODIFIER PROFIL -->
             <div id="tab-edit" class="tab-content">
                 <div class="edit-form">
-                    <h3 style="margin-bottom: 1.5rem; color: var(--gray-800);">Modifier mes informations</h3>
+                    <h3 class="section-subtitle">Modifier mes informations</h3>
                     
                     <form id="editProfileForm">
                         <div class="form-row">
@@ -496,7 +634,7 @@
                             <input type="tel" id="editPhone" placeholder="+243XXXXXXXXX">
                         </div>
 
-                        <h4 style="margin: 1.5rem 0 1rem; color: var(--gray-700);">Changer le mot de passe</h4>
+                        <h3 class="section-subtitle">Changer le mot de passe</h3>
                         
                         <div class="form-group">
                             <label for="currentPassword">Mot de passe actuel</label>
@@ -569,7 +707,7 @@
                         </thead>
                         <tbody id="presencesTableBody">
                             <tr>
-                                <td colspan="4" style="text-align: center; color: var(--gray-500);">
+                                <td colspan="4" class="no-data">
                                     Chargement des données...
                                 </td>
                             </tr>
@@ -626,7 +764,7 @@
                         </thead>
                         <tbody id="retardsTableBody">
                             <tr>
-                                <td colspan="4" style="text-align: center; color: var(--gray-500);">
+                                <td colspan="4" class="no-data">
                                     Chargement des données...
                                 </td>
                             </tr>
@@ -683,7 +821,7 @@
                         </thead>
                         <tbody id="retenuesTableBody">
                             <tr>
-                                <td colspan="4" style="text-align: center; color: var(--gray-500);">
+                                <td colspan="4" class="no-data">
                                     Chargement des données...
                                 </td>
                             </tr>
@@ -707,6 +845,12 @@
                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
             </svg>
             <span>Agent</span>
+        </a>
+        <a href="detaille.html" class="nav-item" id="nav-detail">
+            <svg viewBox="0 0 24 24">
+                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+            </svg>
+            <span>Détails</span>
         </a>
         <a href="profil.html" class="nav-item active" id="nav-profil">
             <svg viewBox="0 0 24 24">
