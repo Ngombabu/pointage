@@ -1,121 +1,91 @@
 // SCAN/scanner.js
-
-// Version locale de jsQR (incluse directement)
-const jsQR = (function() {
-    // Version simplifiée de jsQR pour éviter les problèmes CORS
-    // En production, utilisez une copie locale du fichier
-    
-    // Fonction de détection QR code simplifiée
-    function scanQR(imageData) {
-        // Simulation pour le développement
-        // En production, utilisez la vraie bibliothèque
-        return null;
-    }
-
-    return scanQR;
-})();
-
 class QRScanner {
     constructor() {
         this.video = document.getElementById('video');
         this.canvas = document.createElement('canvas');
-        this.ctx = this.canvas.getContext('2d');
+        this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });
         this.scanning = false;
         this.scanInterval = null;
         this.history = [];
         
-        // Styles pour les boutons
-        this.initStyles();
         this.init();
-    }
-
-    initStyles() {
-        // Ajouter les styles manquants
-        const style = document.createElement('style');
-        style.textContent = `
-            .btn-primary {
-                background: #2563eb;
-                color: white;
-                border: none;
-                padding: 1rem;
-                border-radius: 15px;
-                font-size: 1rem;
-                font-weight: 500;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-            .btn-primary:hover {
-                background: #1d4ed8;
-                transform: translateY(-2px);
-            }
-            .btn-secondary {
-                background: transparent;
-                color: #2563eb;
-                border: 2px solid #2563eb;
-                padding: 1rem;
-                border-radius: 15px;
-                font-size: 1rem;
-                font-weight: 500;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-            .btn-secondary:hover {
-                background: #e6f0ff;
-                transform: translateY(-2px);
-            }
-            .btn-primary:disabled, .btn-secondary:disabled {
-                opacity: 0.5;
-                cursor: not-allowed;
-                transform: none;
-            }
-        `;
-        document.head.appendChild(style);
     }
 
     async init() {
         // Vérifier session
-        await this.checkSession();
+        const isValid = await this.checkSession();
+        if (!isValid) return;
         
         // Initialiser les événements
         document.getElementById('startScanBtn').addEventListener('click', () => this.start());
         document.getElementById('stopScanBtn').addEventListener('click', () => this.stop());
         document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
+        
+        // Charger jsQR
+        await this.loadJsQR();
     }
 
     async checkSession() {
         try {
-            const response = await fetch('api.php?action=status');
+            const response = await fetch('api/check_session.php');
             const data = await response.json();
             
-            if (!data.success) {
-                this.showAlert('Session expirée', 'error');
-                setTimeout(() => {
-                    window.location.href = '/pointage-presence.rf.gd/superviseur/';
-                }, 2000);
-                return;
+            if (!data.logged_in) {
+                window.location.href = 'index.html';
+                return false;
             }
-
-            // Mettre à jour l'interface
-            document.getElementById('heureLimite').textContent = data.heure_pointage;
-            document.getElementById('shopName').textContent = data.shop_nom || 'Shop inconnu';
+            
+            // Récupérer les infos de la session
+            const statusResponse = await fetch('api.php?action=status');
+            const statusData = await statusResponse.json();
+            
+            if (statusData.success) {
+                document.getElementById('heureLimite').textContent = statusData.heure_pointage;
+                document.getElementById('shopName').textContent = statusData.shop_nom || 'Shop inconnu';
+                document.getElementById('userName').textContent = statusData.superviseur_nom || 'Superviseur';
+                document.getElementById('userAvatar').textContent = (statusData.superviseur_nom?.charAt(0) || '👤').toUpperCase();
+            }
+            
+            return true;
         } catch (error) {
             console.error('Erreur session:', error);
-            this.showAlert('Erreur de connexion', 'error');
+            window.location.href = 'index.html';
+            return false;
         }
+    }
+
+    async loadJsQR() {
+        return new Promise((resolve) => {
+            const cdnUrls = [
+                'https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js',
+                'https://unpkg.com/jsqr@1.4.0/dist/jsQR.min.js'
+            ];
+
+            function tryLoad(index) {
+                if (index >= cdnUrls.length) {
+                    console.warn('jsQR non chargé');
+                    resolve();
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.src = cdnUrls[index];
+                script.onload = resolve;
+                script.onerror = () => tryLoad(index + 1);
+                document.head.appendChild(script);
+            }
+
+            tryLoad(0);
+        });
     }
 
     async start() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { 
-                    facingMode: 'environment',
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                } 
+                video: { facingMode: 'environment' } 
             });
             this.video.srcObject = stream;
             
-            // Attendre que la vidéo soit prête
             await new Promise((resolve) => {
                 this.video.onloadedmetadata = () => {
                     this.video.play();
@@ -124,8 +94,6 @@ class QRScanner {
             });
 
             this.scanning = true;
-            
-            // Démarrer le scan
             this.scanInterval = setInterval(() => this.scan(), 500);
             
             document.getElementById('scanningIndicator').style.display = 'flex';
@@ -152,15 +120,12 @@ class QRScanner {
             return;
         }
 
-        // Capturer une frame
         this.canvas.width = this.video.videoWidth;
         this.canvas.height = this.video.videoHeight;
         this.ctx.drawImage(this.video, 0, 0, this.canvas.width, this.canvas.height);
 
-        // Détecter QR code
         const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
         
-        // Utilisation de jsQR si disponible
         if (window.jsQR) {
             const code = window.jsQR(imageData.data, imageData.width, imageData.height, {
                 inversionAttempts: "dontInvert"
@@ -169,14 +134,10 @@ class QRScanner {
             if (code) {
                 this.processQRCode(code.data);
             }
-        } else {
-            // Fallback: simulation pour le développement
-            console.log('jsQR non chargé');
         }
     }
 
     async processQRCode(data) {
-        // Pause temporaire du scan
         this.scanning = false;
         
         try {
@@ -212,7 +173,6 @@ class QRScanner {
             this.showAlert('Erreur de communication', 'error');
         }
 
-        // Reprendre le scan après 1 seconde
         setTimeout(() => {
             this.scanning = true;
         }, 1000);
@@ -262,53 +222,12 @@ class QRScanner {
 
     logout() {
         this.stop();
-        fetch('../API/connexion/logout.php')
+        fetch('api/logout.php')
             .finally(() => {
-                window.location.href = '/pointage-presence.rf.gd/superviseur/';
+                window.location.href = 'index.html';
             });
     }
 }
 
-// Charger jsQR depuis un CDN alternatif
-function loadJsQR() {
-    return new Promise((resolve, reject) => {
-        // Essayer plusieurs CDN
-        const cdnUrls = [
-            'https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js',
-            'https://unpkg.com/jsqr@1.4.0/dist/jsQR.min.js',
-            'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js'
-        ];
-
-        function tryLoad(index) {
-            if (index >= cdnUrls.length) {
-                console.warn('jsQR non chargé, utilisation du fallback');
-                resolve();
-                return;
-            }
-
-            const script = document.createElement('script');
-            script.src = cdnUrls[index];
-            script.onload = resolve;
-            script.onerror = () => tryLoad(index + 1);
-            document.head.appendChild(script);
-        }
-
-        tryLoad(0);
-    });
-}
-
-// Version locale de jsQR en cas d'échec
-window.jsQR = window.jsQR || function(data, width, height, options) {
-    // Version simplifiée pour le développement
-    // En production, assurez-vous que jsQR est bien chargé
-    return null;
-};
-
 // Démarrer l'application
-loadJsQR().then(() => {
-    new QRScanner();
-}).catch(error => {
-    console.error('Erreur chargement jsQR:', error);
-    // Démarrer quand même avec le fallback
-    new QRScanner();
-});
+new QRScanner();

@@ -1,5 +1,5 @@
 <?php
-// superviseur/login.php
+// SCAN/api/login.php
 session_start();
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -7,10 +7,10 @@ header('Access-Control-Allow-Methods: POST, GET');
 header('Access-Control-Allow-Headers: Content-Type');
 
 // Configuration DB
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'pointeur_db');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_HOST', 'sql302.infinityfree.com');
+define('DB_NAME', 'if0_41083645_pointage_db');
+define('DB_USER', 'if0_41083645');
+define('DB_PASS', 'TwbNlC3rhQTFY');
 
 function getDBConnection() {
     try {
@@ -33,7 +33,6 @@ function getShops($pdo, $superviseurId) {
         $stmt->execute([$superviseurId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (Exception $e) {
-        error_log("Erreur shops: " . $e->getMessage());
         return [];
     }
 }
@@ -105,19 +104,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Créer session
+    // Créer session persistante
     $_SESSION['superviseur_id'] = $superviseur['id'];
     $_SESSION['superviseur_nom'] = $superviseur['nom'] . ' ' . $superviseur['prenom'];
     $_SESSION['shop_id'] = $shop_id;
     $_SESSION['shop_nom'] = $shop['nom'];
     $_SESSION['logged_in'] = true;
+    $_SESSION['login_time'] = time();
 
     echo json_encode([
         'success' => true,
         'message' => 'Connexion réussie',
-        'redirect' => '/POINTAGE/SCAN/scan.html'
+        'redirect' => 'scan.html'
     ]);
     exit;
 }
+
 echo json_encode(['success' => false, 'message' => 'Méthode non autorisée']);
 ?>
