@@ -1,6 +1,9 @@
 name: Deploy to InfinityFree
 
-on: [push]
+on:
+  push:
+    branches:
+      - feature/pointage-agent
 
 jobs:
   deploy:
