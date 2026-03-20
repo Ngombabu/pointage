@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Administration</title>
+    <link rel="shortcut icon" href="../SRC/IMG/logo.png" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(145deg, #f5f7fa 0%, #e9ecf0 100%);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .dashboard-header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-img {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 12px rgba(37,99,235,0.25);
+        }
+
+        .logo-img svg {
+            width: 30px;
+            height: 30px;
+            fill: white;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            background: linear-gradient(145deg, #1e293b, #334155);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-badge {
+            background: #e6f0ff;
+            padding: 0.5rem 1.2rem;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid #2563eb33;
+        }
+
+        .user-badge .avatar {
+            width: 32px;
+            height: 32px;
+            background: #2563eb;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .badge-admin {
+            background: #7c3aed;
+            color: white;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+
+        .btn-logout {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        /* Navigation */
+        .admin-nav {
+            background: white;
+            border-radius: 20px;
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .nav-btn {
+            padding: 1rem 2rem;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            font-weight: 500;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+            justify-content: center;
+            min-width: 150px;
+        }
+
+        .nav-btn:hover {
+            background: #f1f5f9;
+            color: #2563eb;
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: white;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+        }
+
+        /* Sections */
+        .admin-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .admin-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cartes */
+        .section-card {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.6);
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #2563eb;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 3px solid rgba(37,99,235,0.2);
+            padding-bottom: 0.5rem;
+        }
+
+        /* Grilles */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        /* Barre de recherche */
+        .search-box {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            font-size: 1rem;
+            min-width: 250px;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .search-box button {
+            padding: 1rem 2rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .search-box button:hover {
+            background: #1d4ed8;
+        }
+
+        /* Tableaux */
+        .table-container {
+            overflow-x: auto;
+            background: white;
+            border-radius: 20px;
+            padding: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            color: #64748b;
+            font-weight: 500;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tr:hover td {
+            background: #f8fafc;
+        }
+
+        /* Boutons d'action */
+        .action-btns {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-edit, .btn-delete, .btn-add {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-edit {
+            background: #2563eb20;
+            color: #2563eb;
+        }
+
+        .btn-edit:hover {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #ef444420;
+            color: #ef4444;
+        }
+
+        .btn-delete:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-add {
+            background: #22c55e20;
+            color: #16a34a;
+        }
+
+        .btn-add:hover {
+            background: #22c55e;
+            color: white;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 30px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #2563eb;
+        }
+
+        .modal-close {
+            float: right;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .modal-close:hover {
+            color: #ef4444;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn-save {
+            flex: 1;
+            padding: 1rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 1rem;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        /* Alert */
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: slideInRight 0.3s ease;
+            z-index: 1001;
+        }
+
+        .alert.success { border-left: 4px solid #22c55e; }
+        .alert.error { border-left: 4px solid #ef4444; }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .nav-btn {
+                min-width: 100%;
+            }
+            
+            .search-box {
+                flex-direction: column;
+            }
+            
+            .search-box button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div class="header-left">
+                <div class="logo">
+                    <div class="logo-img">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                        </svg>
+                    </div>
+                    <span class="logo-text">Admin</span>
+                </div>
+                <div class="user-badge" id="userBadge">
+                    <span class="avatar" id="userAvatar">👤</span>
+                    <span id="userName">Chargement...</span>
+                    <span class="badge-admin" id="adminBadge" style="display: none;">Admin</span>
+                </div>
+            </div>
+            <button class="btn-logout" id="logoutBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                </svg>
+                Déconnexion
+            </button>
+        </div>
+
+        <!-- Navigation -->
+        <div class="admin-nav">
+            <button class="nav-btn active" data-section="dashboard">
+                📊 Tableau de bord
+            </button>
+            <button class="nav-btn" data-section="superviseurs">
+                👥 Superviseurs
+            </button>
+            <button class="nav-btn" data-section="agents">
+                👤 Agents
+            </button>
+            <button class="nav-btn" data-section="shops">
+                🏪 Shops
+            </button>
+            <button class="nav-btn" data-section="config">
+                ⚙️ Configuration
+            </button>
+            <button class="nav-btn" data-section="retenues">
+                💰 Retenues
+            </button>
+        </div>
+
+        <!-- SECTION: TABLEAU DE BORD -->
+        <div id="section-dashboard" class="admin-section active">
+            <div class="section-card">
+                <h2 class="section-title">📊 Tableau de bord</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total superviseurs</div>
+                        <div class="stat-value" id="totalSuperviseurs">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total agents</div>
+                        <div class="stat-value" id="totalAgents">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total shops</div>
+                        <div class="stat-value" id="totalShops">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Présences aujourd'hui</div>
+                        <div class="stat-value" id="presencesToday">0</div>
+                    </div>
+                </div>
+
+                <div class="search-box">
+                    <input type="text" id="searchAgent" placeholder="Rechercher un agent par nom, email...">
+                    <button onclick="searchAgents()">Rechercher</button>
+                </div>
+
+                <div class="table-container">
+                    <table id="agentsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom</th>
+                                <th>Email</th>
+                                <th>Téléphone</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="agentsTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center;">Chargement...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: SUPERVISEURS -->
+        <div id="section-superviseurs" class="admin-section">
+            <div class="section-card">
+                <h2 class="section-title">👥 Gestion des superviseurs</h2>
+                
+                <button class="btn-add" onclick="openModal('superviseur')" style="margin-bottom: 1rem; padding: 0.8rem 1.5rem;">
+                    + Ajouter un superviseur
+                </button>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Email</th>
+                                <th>Téléphone</th>
+                                <th>Rôle</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="superviseursTableBody">
+                            <tr>
+                                <td colspan="7" style="text-align: center;">Chargement...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: AGENTS -->
+        <div id="section-agents" class="admin-section">
+            <div class="section-card">
+                <h2 class="section-title">👤 Gestion des agents</h2>
+                
+                <button class="btn-add" onclick="openModal('agent')" style="margin-bottom: 1rem; padding: 0.8rem 1.5rem;">
+                    + Ajouter un agent
+                </button>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Email</th>
+                                <th>Téléphone</th>
+                                <th>Superviseur</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="agentsFullTableBody">
+                            <tr>
+                                <td colspan="7" style="text-align: center;">Chargement...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: SHOPS -->
+        <div id="section-shops" class="admin-section">
+            <div class="section-card">
+                <h2 class="section-title">🏪 Gestion des shops</h2>
+                
+                <button class="btn-add" onclick="openModal('shop')" style="margin-bottom: 1rem; padding: 0.8rem 1.5rem;">
+                    + Ajouter un shop
+                </button>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nom</th>
+                                <th>Adresse</th>
+                                <th>Superviseur</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="shopsTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center;">Chargement...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: CONFIGURATION -->
+        <div id="section-config" class="admin-section">
+            <div class="section-card">
+                <h2 class="section-title">⚙️ Configuration</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Heure de pointage</div>
+                        <div class="stat-value" id="configHeure">07:00</div>
+                        <button class="btn-edit" onclick="editConfig('heure')" style="margin-top: 1rem;">Modifier</button>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Pénalité (€)</div>
+                        <div class="stat-value" id="configPenalite">2.50 €</div>
+                        <button class="btn-edit" onclick="editConfig('penalite')" style="margin-top: 1rem;">Modifier</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: RETENUES -->
+        <div id="section-retenues" class="admin-section">
+            <div class="section-card">
+                <h2 class="section-title">💰 Gestion des retenues</h2>
+                
+                <div class="search-box">
+                    <select id="retenueMois">
+                        <option value="01">Janvier</option>
+                        <option value="02">Février</option>
+                        <option value="03">Mars</option>
+                        <option value="04">Avril</option>
+                        <option value="05">Mai</option>
+                        <option value="06">Juin</option>
+                        <option value="07">Juillet</option>
+                        <option value="08">Août</option>
+                        <option value="09">Septembre</option>
+                        <option value="10">Octobre</option>
+                        <option value="11">Novembre</option>
+                        <option value="12">Décembre</option>
+                    </select>
+                    <select id="retenueAnnee"></select>
+                    <button onclick="loadRetenuesMensuelles()">Charger</button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total retenues du mois</div>
+                        <div class="stat-value" id="totalRetenuesMois">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Montant total</div>
+                        <div class="stat-value" id="montantTotalMois">0 €</div>
+                    </div>
+                </div>
+
+                <button class="btn-add" onclick="openModal('retenue')" style="margin: 1rem 0; padding: 0.8rem 1.5rem;">
+                    + Ajouter une retenue manuelle
+                </button>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Agent</th>
+                                <th>Date</th>
+                                <th>Montant</th>
+                                <th>Motif</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="retenuesTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center;">Chargement...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <h3 class="modal-title" id="modalTitle">Ajouter</h3>
+            <form id="modalForm">
+                <div id="modalFields"></div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn-save">Enregistrer</button>
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Annuler</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
