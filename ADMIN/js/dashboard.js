@@ -225,7 +225,7 @@ async function loadConfig() {
         
         if (data.success) {
             document.getElementById('configHeure').textContent = data.heure || '07:00';
-            document.getElementById('configPenalite').textContent = (data.penalite || '2.50') + ' €';
+            document.getElementById('configPenalite').textContent = (data.penalite || '2.50') + ' $';
         }
     } catch (error) {
         console.error('Erreur config:', error);
@@ -274,7 +274,7 @@ async function loadRetenuesMensuelles() {
         
         if (data.success) {
             document.getElementById('totalRetenuesMois').textContent = data.total || 0;
-            document.getElementById('montantTotalMois').textContent = (data.montant_total || '0') + ' €';
+            document.getElementById('montantTotalMois').textContent = (data.montant_total || '0') + ' $';
             
             const tbody = document.getElementById('retenuesTableBody');
             if (tbody) {
@@ -283,7 +283,7 @@ async function loadRetenuesMensuelles() {
                         <tr>
                             <td>${r.agent_nom || 'Agent'}</td>
                             <td>${r.date_formatee || new Date(r.moi).toLocaleDateString('fr-FR')}</td>
-                            <td><strong>${r.montant} €</strong></td>
+                            <td><strong>${r.montant} $</strong></td>
                             <td>${r.motif || 'Retard automatique'}</td>
                             <td>${r.shop || '-'}</td>
                             <td class="action-btns">
@@ -330,7 +330,7 @@ function showAgentStats(stats) {
         statsContainer.innerHTML = stats.map(s => `
             <div class="stat-card" onclick="filterByAgent(${s.agent_id})" style="cursor: pointer;">
                 <div class="stat-label">${s.nom}</div>
-                <div class="stat-value">${s.montant} €</div>
+                <div class="stat-value">${s.montant} $</div>
                 <div class="stat-sub">${s.total} retenue(s)</div>
             </div>
         `).join('');
@@ -530,7 +530,7 @@ function openModal(type, id = null) {
                     <input type="number" id="inputAgentId" required>
                 </div>
                 <div class="form-group">
-                    <label>Montant (€)</label>
+                    <label>Montant ($)</label>
                     <input type="number" step="0.01" id="inputMontant" required>
                 </div>
                 <div class="form-group">
@@ -748,10 +748,10 @@ function editConfig(type) {
     
     const currentValue = type === 'heure' 
         ? document.getElementById('configHeure').textContent 
-        : document.getElementById('configPenalite').textContent.replace(' €', '');
+        : document.getElementById('configPenalite').textContent.replace(' $', '');
     
     const newValue = prompt(
-        `Nouvelle valeur pour ${type === 'heure' ? 'l\'heure (HH:MM)' : 'la pénalité (€)'}:`, 
+        `Nouvelle valeur pour ${type === 'heure' ? 'l\'heure (HH:MM)' : 'la pénalité ($)'}:`, 
         currentValue
     );
     
@@ -799,7 +799,7 @@ async function showAgentRetenues(agentId) {
                 ? data.details.map(r => `
                     <tr>
                         <td>${r.date_formatee}</td>
-                        <td><strong>${r.montant} €</strong></td>
+                        <td><strong>${r.montant} $</strong></td>
                         <td>${r.motif}</td>
                         <td>${r.date_retard || '-'}</td>
                     </tr>
@@ -812,7 +812,7 @@ async function showAgentRetenues(agentId) {
                     <tr>
                         <td>${m.mois}</td>
                         <td>${m.nombre}</td>
-                        <td><strong>${m.total} €</strong></td>
+                        <td><strong>${m.total} $</strong></td>
                     </tr>
                 `).join('')
                 : '<tr><td colspan="3" style="text-align: center;">Aucune donnée mensuelle</td></tr>';
@@ -827,7 +827,7 @@ async function showAgentRetenues(agentId) {
                             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
                                 <div>
                                     <div style="color: #64748b; font-size: 0.9rem;">Total</div>
-                                    <div style="font-size: 1.5rem; font-weight: 600; color: #2563eb;">${data.stats.total_global} €</div>
+                                    <div style="font-size: 1.5rem; font-weight: 600; color: #2563eb;">${data.stats.total_global} $</div>
                                 </div>
                                 <div>
                                     <div style="color: #64748b; font-size: 0.9rem;">Nombre</div>
@@ -835,7 +835,7 @@ async function showAgentRetenues(agentId) {
                                 </div>
                                 <div>
                                     <div style="color: #64748b; font-size: 0.9rem;">Moyenne</div>
-                                    <div style="font-size: 1.5rem; font-weight: 600;">${data.stats.moyenne} €</div>
+                                    <div style="font-size: 1.5rem; font-weight: 600;">${data.stats.moyenne} $</div>
                                 </div>
                             </div>
                         </div>
@@ -1058,7 +1058,7 @@ async function loadRetards() {
             // Mettre à jour les stats
             document.getElementById('totalRetards').textContent = data.stats.total_retards;
             document.getElementById('totalMinutesRetards').textContent = data.stats.total_minutes;
-            document.getElementById('totalPenalitesRetards').textContent = data.stats.total_penalites + ' €';
+            document.getElementById('totalPenalitesRetards').textContent = data.stats.total_penalites + ' $';
             
             // Mettre à jour le tableau
             const tbody = document.getElementById('retardsTableBody');

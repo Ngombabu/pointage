@@ -91,7 +91,7 @@
         .user-badge .avatar {
             width: 32px;
             height: 32px;
-            background: #2563eb;
+            background:#e00482;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -158,11 +158,11 @@
 
         .nav-btn:hover {
             background: #f1f5f9;
-            color: #2563eb;
+            color:#e00482;
         }
 
         .nav-btn.active {
-            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            background: linear-gradient(135deg, #e00482, #e00482);
             color: white;
             box-shadow: 0 4px 12px rgba(37,99,235,0.3);
         }
@@ -197,7 +197,7 @@
             font-size: 1.5rem;
             font-weight: 600;
             margin-bottom: 1.5rem;
-            color: #2563eb;
+            color: #e00482;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -318,12 +318,12 @@
 
         .search-box input:focus {
             outline: none;
-            border-color: #2563eb;
+            border-color: #e00482;
         }
 
         .search-box button {
             padding: 1rem 2rem;
-            background: #2563eb;
+            background:#e00482;
             color: white;
             border: none;
             border-radius: 15px;
@@ -332,7 +332,7 @@
         }
 
         .search-box button:hover {
-            background: #1d4ed8;
+            background: #e00482;
         }
 
         /* Tableaux */
@@ -384,11 +384,11 @@
 
         .btn-edit {
             background: #2563eb20;
-            color: #2563eb;
+            color: #e00482;
         }
 
         .btn-edit:hover {
-            background: #2563eb;
+            background: #e00482;
             color: white;
         }
 
@@ -454,7 +454,7 @@
             font-size: 1.3rem;
             font-weight: 600;
             margin-bottom: 1.5rem;
-            color: #2563eb;
+            color: #e00482;
         }
 
         .modal-close {
@@ -488,7 +488,7 @@
 
         .form-group input:focus, .form-group select:focus {
             outline: none;
-            border-color: #2563eb;
+            border-color: #e00482;
         }
 
         .modal-footer {
@@ -500,7 +500,7 @@
         .btn-save {
             flex: 1;
             padding: 1rem;
-            background: #2563eb;
+            background: #e00482;
             color: white;
             border: none;
             border-radius: 10px;
@@ -582,10 +582,8 @@
         <div class="dashboard-header">
             <div class="header-left">
                 <div class="logo">
-                    <div class="logo-img">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-                        </svg>
+                    <div class="logo">
+                      <img src="../SRC/IMG/logo.png " width="50px">
                     </div>
                     <span class="logo-text">Admin</span>
                 </div>
@@ -626,6 +624,9 @@
             <button class="nav-btn" data-section="retards">
                 ⏰ Retards
             </button>
+            <button class="nav-btn" data-section="presences">
+              📅 Présences
+           </button>
             <button class="nav-btn" data-section="retenues">
                 💰 Retenues
             </button>
@@ -787,8 +788,8 @@
                         <button class="btn-edit" onclick="editConfig('heure')" style="margin-top: 1rem;">Modifier</button>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Pénalité (€)</div>
-                        <div class="stat-value" id="configPenalite">2.50 €</div>
+                        <div class="stat-label">Pénalité ($)</div>
+                        <div class="stat-value" id="configPenalite">2.50 $</div>
                         <button class="btn-edit" onclick="editConfig('penalite')" style="margin-top: 1rem;">Modifier</button>
                     </div>
                 </div>
@@ -862,7 +863,7 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Pénalités générées</div>
-                        <div class="stat-value" id="totalPenalitesRetards">0 €</div>
+                        <div class="stat-value" id="totalPenalitesRetards">0 $</div>
                     </div>
                 </div>
 
@@ -888,7 +889,130 @@
                 </div>
             </div>
         </div>
+        <!-- SECTION: PRÉSENCES -->
+        <div id="section-presences" class="admin-section">
+            <div class="section-card">
+                <h2 class="section-title">📅 Gestion des présences</h2>
+                
+                <!-- Filtres -->
+                <div class="filters-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div class="filter-group">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Mois</label>
+                        <select id="presenceMois" class="filter-select" style="width: 100%; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 10px;">
+                            <option value="01">Janvier</option>
+                            <option value="02">Février</option>
+                            <option value="03">Mars</option>
+                            <option value="04">Avril</option>
+                            <option value="05">Mai</option>
+                            <option value="06">Juin</option>
+                            <option value="07">Juillet</option>
+                            <option value="08">Août</option>
+                            <option value="09">Septembre</option>
+                            <option value="10">Octobre</option>
+                            <option value="11">Novembre</option>
+                            <option value="12">Décembre</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Année</label>
+                        <select id="presenceAnnee" class="filter-select" style="width: 100%; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 10px;">
+                            <!-- Généré par JS -->
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Shop</label>
+                        <select id="presenceShop" class="filter-select" style="width: 100%; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 10px;">
+                            <option value="all">Tous les shops</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Agent</label>
+                        <select id="presenceAgent" class="filter-select" style="width: 100%; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 10px;">
+                            <option value="all">Tous les agents</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group" style="display: flex; align-items: flex-end;">
+                        <button onclick="loadPresences()" class="btn-primary" style="width: 100%; padding: 0.8rem; background: #2563eb; color: white; border: none; border-radius: 10px; cursor: pointer;">
+                            🔍 Charger
+                        </button>
+                    </div>
+                </div>
 
+                <!-- Statistiques globales -->
+                <div class="stats-grid" id="presenceStats" style="margin-bottom: 2rem;">
+                    <div class="stat-card">
+                        <div class="stat-label">Total présences</div>
+                        <div class="stat-value" id="totalPresences">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Agents distincts</div>
+                        <div class="stat-value" id="totalAgentsPresence">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Jours travaillés</div>
+                        <div class="stat-value" id="totalJours">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Moyenne/jour</div>
+                        <div class="stat-value" id="moyenneParJour">0</div>
+                    </div>
+                </div>
+
+                <!-- Graphique des présences par jour -->
+                <div class="chart-container" style="background: white; border-radius: 20px; padding: 1.5rem; margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem; color: #2563eb;">📊 Présences par jour</h3>
+                    <div id="presencesChart" style="height: 300px; display: flex; align-items: flex-end; gap: 2px;">
+                        <!-- Graphique généré par JS -->
+                    </div>
+                </div>
+
+                <!-- Tableau des présences par agent -->
+                <div class="table-container" style="margin-bottom: 2rem;">
+                    <h3 style="margin-bottom: 1rem; color: #2563eb;">👥 Présences par agent</h3>
+                    <table id="presencesParAgentTable">
+                        <thead>
+                            <tr>
+                                <th>Agent</th>
+                                <th>Email</th>
+                                <th>Total présences</th>
+                                <th>Jours travaillés</th>
+                                <th>Détails</th>
+                            </tr>
+                        </thead>
+                        <tbody id="presencesParAgentBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center;">Chargement...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Tableau détaillé des présences -->
+                <div class="table-container">
+                    <h3 style="margin-bottom: 1rem; color: #2563eb;">📋 Détail des présences</h3>
+                    <table id="presencesDetailTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Agent</th>
+                                <th>Shop</th>
+                                <th>Heure</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="presencesDetailBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center;">Chargement...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
         <!-- SECTION: RETENUES -->
         <div id="section-retenues" class="admin-section">
             <div class="section-card">
@@ -920,7 +1044,7 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Montant total</div>
-                        <div class="stat-value" id="montantTotalMois">0 €</div>
+                        <div class="stat-value" id="montantTotalMois">0 $</div>
                     </div>
                 </div>
 
