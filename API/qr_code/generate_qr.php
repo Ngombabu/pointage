@@ -105,7 +105,7 @@ try {
         sendJSON([
             'success' => true,
             'qr_path' => $relativePath,
-            'qr_url' => '/POINTAGE/' . $relativePath,
+            'qr_url' => '/pointage-presence.rf.gd/' . $relativePath,
             'token' => $token,
             'timestamp' => $timestamp,
             'expires_in' => 15

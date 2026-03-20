@@ -115,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     echo json_encode([
         'success' => true,
         'message' => 'Connexion réussie',
-        'redirect' => '/POINTAGE/SCAN/scan.html'
+        'redirect' => '/pointage-presence.rf.gd/SCAN/scan.html'
     ]);
     exit;
 }

@@ -90,7 +90,7 @@ class QRScanner {
             if (!data.success) {
                 this.showAlert('Session expirée', 'error');
                 setTimeout(() => {
-                    window.location.href = '/POINTAGE/superviseur/';
+                    window.location.href = '/pointage-presence.rf.gd/superviseur/';
                 }, 2000);
                 return;
             }
@@ -264,7 +264,7 @@ class QRScanner {
         this.stop();
         fetch('../API/connexion/logout.php')
             .finally(() => {
-                window.location.href = '/POINTAGE/superviseur/';
+                window.location.href = '/pointage-presence.rf.gd/superviseur/';
             });
     }
 }
