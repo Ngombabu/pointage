@@ -1,21 +1,13 @@
-name: Déployer sur InfinityFree
+name: Deploy to InfinityFree
 
-on:
-  push:
-    branches:
-      - main
-      - master
+on: [push]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Récupérer le code
-        uses: actions/checkout@v4
-      
-      - name: Envoyer via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      - uses: actions/checkout@v4
+      - uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
