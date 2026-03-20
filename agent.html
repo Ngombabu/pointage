@@ -101,7 +101,7 @@
         }
 
         .btn-primary:hover:not(:disabled) {
-            background: #e00482;
+            background: #c0036e;
             transform: translateY(-2px);
         }
 
@@ -117,7 +117,7 @@
         }
 
         .btn-secondary:hover {
-            background: #e6f0ff;
+            background: #ffe6f5;
             transform: translateY(-2px);
         }
 
@@ -136,6 +136,21 @@
             padding: 1rem;
         }
 
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #e00482;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         @media (max-width: 480px) {
             .actions {
                 flex-direction: column;
@@ -144,7 +159,8 @@
                 width: 100%;
             }
         }
-        a{
+        
+        a {
             text-decoration: none;
         }
     </style>
@@ -153,11 +169,9 @@
     <header>
         <div class="header-container">
             <div class="logo">
-                <img src="./SRC/IMG/logo.png " width="50px">
+                <img src="./SRC/IMG/logo.png" width="50px" alt="Logo">
                 <span class="logo-text">MobileApp</span>
             </div>
-            <div id="userHeaderInfo"></div>
-        </div>
             <div id="userHeaderInfo"></div>
         </div>
     </header>
@@ -215,7 +229,6 @@
             </svg>
             <span>Détails</span>
         </a>
-        <!-- Dans la navigation bottom-nav de chaque page -->
         <a href="profil.html" class="nav-item" id="nav-profil">
             <svg viewBox="0 0 24 24">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
@@ -251,7 +264,7 @@
             }
         };
 
-        // Vérifier connexion - NE PAS REDIRIGER, juste afficher le bouton déconnexion
+        // Vérifier connexion
         const userData = SessionManager.get('user');
         const headerInfo = document.getElementById('userHeaderInfo');
         
@@ -259,7 +272,7 @@
             const fullName = [userData.nom, userData.prenom].filter(Boolean).join(' ');
             headerInfo.innerHTML = `
                 <div class="user-badge">
-                    <span class="avatar" >${(fullName[0] || '👤').toUpperCase()}</span>
+                    <span class="avatar">${(fullName[0] || '👤').toUpperCase()}</span>
                     <span class="name">${fullName || 'Agent'}</span>
                 </div>
                 <button class="btn-logout" id="logoutBtn">
@@ -302,14 +315,14 @@
                 cache: 'no-store'
             })
             .then(res => {
-                if (!res.ok) throw new Error('Erreur réseau');
+                if (!res.ok) throw new Error('Erreur réseau: ' + res.status);
                 return res.text();
             })
             .then(text => {
                 try {
                     return JSON.parse(text);
                 } catch (e) {
-                    console.error('JSON invalide:', text.substring(0, 100));
+                    console.error('JSON invalide:', text.substring(0, 200));
                     throw new Error('Réponse serveur invalide');
                 }
             })
@@ -317,9 +330,13 @@
                 retryCount = 0;
                 
                 if (data.success) {
-                    const imageUrl = `/pointage-presence.rf.gd-presence.rf.gd/${data.qr_path}`;
+                    // CORRECTION: Utiliser l'URL retournée par le serveur directement
+                    // Le serveur retourne qr_url qui contient déjà le bon chemin
+                    const imageUrl = data.qr_url;
                     
-                    // Précharger l'image
+                    console.log('Chargement image depuis:', imageUrl);
+                    
+                    // Charger l'image
                     const img = new Image();
                     img.onload = () => {
                         qrImage.src = img.src;
@@ -327,12 +344,15 @@
                         qrImage.style.display = 'block';
                         if (refreshBtn) refreshBtn.disabled = false;
                     };
-                    img.onerror = () => {
+                    img.onerror = (err) => {
+                        console.error('Erreur chargement image:', imageUrl, err);
                         showElement('qrLoading', false);
                         showElement('qrError', true);
+                        document.getElementById('qrError').innerHTML = 
+                            '❌ Erreur de chargement<br><small>' + imageUrl + '</small>';
                         if (refreshBtn) refreshBtn.disabled = false;
                     };
-                    img.src = `${imageUrl}?t=${Date.now()}`;
+                    img.src = imageUrl + '?t=' + Date.now();
                     
                     currentToken = data.token;
                     document.getElementById('currentToken').textContent = 
@@ -348,10 +368,13 @@
                 retryCount++;
                 
                 if (retryCount <= maxRetries) {
+                    console.log(`Nouvelle tentative (${retryCount}/${maxRetries})...`);
                     setTimeout(generateQR, 2000);
                 } else {
                     showElement('qrLoading', false);
                     showElement('qrError', true);
+                    document.getElementById('qrError').innerHTML = 
+                        '❌ Erreur: ' + error.message;
                     if (refreshBtn) refreshBtn.disabled = false;
                 }
             });
@@ -383,11 +406,13 @@
         // Event Listeners
         document.addEventListener('click', (e) => {
             if (e.target.id === 'refreshBtn' || e.target.closest('#refreshBtn')) {
+                e.preventDefault();
                 generateQR();
                 countdown = 15;
             }
             
             if (e.target.id === 'verifyBtn' || e.target.closest('#verifyBtn')) {
+                e.preventDefault();
                 if (!currentToken || !userId) {
                     alert('Token non disponible');
                     return;
@@ -402,6 +427,7 @@
             }
             
             if (e.target.id === 'logoutBtn' || e.target.closest('#logoutBtn')) {
+                e.preventDefault();
                 if (timerInterval) clearInterval(timerInterval);
                 SessionManager.clear();
                 fetch('API/connexion/logout.php')
