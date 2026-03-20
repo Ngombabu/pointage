@@ -56,7 +56,7 @@
         .logo-img {
             width: 44px;
             height: 44px;
-            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            background: linear-gradient(135deg, #e00482, #e00482);
             border-radius: 14px;
             display: flex;
             align-items: center;
@@ -90,7 +90,7 @@
         }
 
         .info-badge strong {
-            color: #2563eb;
+            color: #e00482;
             margin-left: 0.3rem;
         }
 
@@ -107,7 +107,7 @@
         .user-badge .avatar {
             width: 32px;
             height: 32px;
-            background: #2563eb;
+            background: #e00482;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -157,7 +157,7 @@
             font-size: 1.3rem;
             font-weight: 600;
             margin-bottom: 1rem;
-            color: #2563eb;
+            color: #e00482;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -185,7 +185,7 @@
             left: 20px;
             right: 20px;
             bottom: 20px;
-            border: 3px solid #2563eb;
+            border: 3px solid #e00482;
             border-radius: 10px;
             box-shadow: 0 0 0 9999px rgba(0,0,0,0.3);
             pointer-events: none;
@@ -212,7 +212,7 @@
             font-size: 1.3rem;
             font-weight: 600;
             margin-bottom: 1rem;
-            color: #2563eb;
+            color: #e00482;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -234,7 +234,7 @@
         }
 
         .history-list::-webkit-scrollbar-thumb {
-            background: #2563eb;
+            background: #e00482;
             border-radius: 10px;
         }
 
@@ -329,7 +329,7 @@
         .spinner {
             width: 20px;
             height: 20px;
-            border: 3px solid #2563eb;
+            border: 3px solid #e00482;
             border-top-color: transparent;
             border-radius: 50%;
             animation: spin 1s linear infinite;
@@ -402,20 +402,20 @@
         }
 
         .btn-primary {
-            background: #2563eb;
+            background: #e00482;
             color: white;
         }
 
         .btn-primary:hover:not(:disabled) {
-            background: #1d4ed8;
+            background: #e00482;
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(37,99,235,0.25);
         }
 
         .btn-secondary {
             background: transparent;
-            color: #2563eb;
-            border: 2px solid #2563eb;
+            color: #e00482;
+            border: 2px solid #e00482;
         }
 
         .btn-secondary:hover:not(:disabled) {
@@ -447,6 +447,11 @@
                 flex-direction: column;
             }
         }
+        /* Ajoutez ce style dans la section <style> de scan.html */
+    #video {
+        transform: scaleX(-1);
+        -webkit-transform: scaleX(-1);
+    }
     </style>
 </head>
 <body>
@@ -456,9 +461,7 @@
             <div class="header-info">
                 <div class="logo">
                     <div class="logo-img">
-                        <svg viewBox="0 0 24 24" width="24" height="24">
-                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-                        </svg>
+                        <img src="../SRC/IMG/logo_blanc.png " width="50px">
                     </div>
                     <span class="logo-text">Scan QR</span>
                 </div>
