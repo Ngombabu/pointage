@@ -4,44 +4,36 @@ session_start();
 header('Content-Type: application/json');
 require_once '../connexion/db.php';
 
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Non connecté']);
-    exit;
+if (!isLoggedIn()) {
+    sendJSON(false, 'Non connecté');
 }
 
-$userId = isset($_GET['user_id']) ? intval($_GET['user_id']) : $_SESSION['user_id'];
+$userId = isset($_GET['user_id']) ? intval($_GET['user_id']) : getCurrentUserId();
 $month = isset($_GET['month']) ? intval($_GET['month']) : date('m');
 $year = isset($_GET['year']) ? intval($_GET['year']) : date('Y');
 
 $pdo = getDBConnection();
 if (!$pdo) {
-    echo json_encode(['success' => false, 'message' => 'Erreur DB']);
-    exit;
+    sendJSON(false, 'Erreur DB');
 }
 
 try {
-    // Récupérer les retenues du mois
-    $stmt = $pdo->prepare("
+    $retenues = fetchAll($pdo, "
         SELECT r.*, rd.temps as date_retard
         FROM retenu r
         LEFT JOIN retard rd ON r.id_retard = rd.id
-        WHERE r.id_agent = ? 
-        AND MONTH(r.moi) = ? 
-        AND YEAR(r.moi) = ?
+        WHERE r.id_agent = ? AND MONTH(r.moi) = ? AND YEAR(r.moi) = ?
         ORDER BY r.moi DESC
-    ");
-    $stmt->execute([$userId, $month, $year]);
-    $retenues = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    ", [$userId, $month, $year]);
     
     $montantTotal = array_sum(array_column($retenues, 'montant'));
     
-    echo json_encode([
-        'success' => true,
+    sendJSON(true, 'Succès', [
         'total' => count($retenues),
         'montant_total' => $montantTotal,
         'retenues' => $retenues
     ]);
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    sendJSON(false, $e->getMessage());
 }
 ?>
