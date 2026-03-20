@@ -8,7 +8,7 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 // Configuration
 define('DB_HOST', 'sql302.infinityfree.com');
-define('DB_NAME', 'if0_41083645_pointage_db ');
+define('DB_NAME', 'if0_41083645_pointage_db');
 define('DB_USER', 'if0_41083645');
 define('DB_PASS', 'TwbNlC3rhQTFY');
 

@@ -11,7 +11,7 @@ error_reporting(0);
 try {
     require_once('../../phpqrcode-master/qrlib.php');
     define('DB_HOST', 'sql302.infinityfree.com');
-    define('DB_NAME', 'if0_41083645_pointage_db ');
+    define('DB_NAME', 'if0_41083645_pointage_db');
     define('DB_USER', 'if0_41083645');
     define('DB_PASS', 'TwbNlC3rhQTFY');
     define('BASE_PATH', realpath(__DIR__ . '/../../') . '/');
