@@ -1195,3 +1195,243 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Exporter les nouvelles fonctions
 window.toggleConnexion = toggleConnexion;
 window.loadRetards = loadRetards;
+
+
+// ================ SECTION PRÉSENCES ================
+
+// Variables globales pour les présences
+let presenceChart = null;
+
+// Charger les présences
+async function loadPresences() {
+    const mois = document.getElementById('presenceMois')?.value || '01';
+    const annee = document.getElementById('presenceAnnee')?.value || new Date().getFullYear();
+    const shopId = document.getElementById('presenceShop')?.value || 'all';
+    const agentId = document.getElementById('presenceAgent')?.value || 'all';
+    
+    try {
+        showAlert('Chargement des présences...', 'success');
+        
+        const url = `api/presences.php?mois=${mois}&annee=${annee}&shop_id=${shopId}&agent_id=${agentId}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) throw new Error('Erreur réseau');
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            updatePresenceStats(data.stats);
+            updatePresenceChart(data.par_jour);
+            updatePresenceParAgent(data.par_agent);
+            updatePresenceDetails(data.details);
+            updatePresenceFilters(data.filters);
+        } else {
+            showAlert(data.message || 'Erreur de chargement', 'error');
+        }
+    } catch (error) {
+        console.error('Erreur présences:', error);
+        showAlert('Erreur lors du chargement des présences', 'error');
+    }
+}
+
+// Mettre à jour les statistiques
+function updatePresenceStats(stats) {
+    document.getElementById('totalPresences').textContent = stats.total || 0;
+    document.getElementById('totalAgentsPresence').textContent = stats.total_agents || 0;
+    document.getElementById('totalJours').textContent = stats.total_jours || 0;
+    document.getElementById('moyenneParJour').textContent = stats.moyenne || 0;
+}
+
+// Mettre à jour le graphique
+function updatePresenceChart(parJour) {
+    const chartContainer = document.getElementById('presencesChart');
+    if (!chartContainer) return;
+    
+    if (!parJour || parJour.length === 0) {
+        chartContainer.innerHTML = '<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #64748b;">Aucune donnée</div>';
+        return;
+    }
+    
+    // Trier par date
+    parJour.sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    // Trouver la valeur max pour l'échelle
+    const maxValue = Math.max(...parJour.map(j => j.total));
+    const chartHeight = 280;
+    
+    let chartHtml = '<div style="display: flex; align-items: flex-end; gap: 2px; height: 100%;">';
+    
+    parJour.forEach(jour => {
+        const height = maxValue > 0 ? (jour.total / maxValue) * chartHeight : 0;
+        chartHtml += `
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+                <div style="width: 100%; background: linear-gradient(180deg, #2563eb, #7c3aed); height: ${height}px; border-radius: 4px 4px 0 0;" 
+                     title="${jour.date_formatee}: ${jour.total} présence(s)"></div>
+                <div style="font-size: 0.7rem; margin-top: 0.3rem; transform: rotate(-45deg);">${jour.date_formatee.slice(0,5)}</div>
+            </div>
+        `;
+    });
+    
+    chartHtml += '</div>';
+    chartContainer.innerHTML = chartHtml;
+}
+
+// Mettre à jour le tableau par agent
+function updatePresenceParAgent(parAgent) {
+    const tbody = document.getElementById('presencesParAgentBody');
+    if (!tbody) return;
+    
+    if (!parAgent || parAgent.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Aucune donnée</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = parAgent.map(a => `
+        <tr>
+            <td>${a.nom}</td>
+            <td>${a.email}</td>
+            <td><strong>${a.total}</strong></td>
+            <td>${a.jours} jours</td>
+            <td>
+                <button class="btn-view" onclick="filterByAgent(${a.id})" style="padding: 0.3rem 1rem;">Voir</button>
+                <button class="btn-view" onclick="showAgentRetenues(${a.id})" style="padding: 0.3rem 1rem;">💰 Retenues</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Mettre à jour les détails des présences
+function updatePresenceDetails(details) {
+    const tbody = document.getElementById('presencesDetailBody');
+    if (!tbody) return;
+    
+    if (!details || details.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Aucune présence</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = details.map(d => `
+        <tr>
+            <td>${d.date_formatee}</td>
+            <td>${d.agent}</td>
+            <td>${d.shop}</td>
+            <td>${new Date(d.date).toLocaleTimeString('fr-FR')}</td>
+            <td>
+                <span class="badge ${d.est_retard ? 'badge-warning' : 'badge-success'}">
+                    ${d.est_retard ? '⚠️ Retard' : '✅ OK'}
+                </span>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Mettre à jour les filtres
+function updatePresenceFilters(filters) {
+    // Mettre à jour la liste des shops
+    const shopSelect = document.getElementById('presenceShop');
+    if (shopSelect && filters.shops) {
+        shopSelect.innerHTML = '<option value="all">Tous les shops</option>';
+        filters.shops.forEach(shop => {
+            shopSelect.innerHTML += `<option value="${shop.id}">${shop.nom}</option>`;
+        });
+    }
+    
+    // Mettre à jour la liste des agents
+    const agentSelect = document.getElementById('presenceAgent');
+    if (agentSelect && filters.agents) {
+        agentSelect.innerHTML = '<option value="all">Tous les agents</option>';
+        filters.agents.forEach(agent => {
+            agentSelect.innerHTML += `<option value="${agent.id}">${agent.nom} ${agent.prenom || ''}</option>`;
+        });
+    }
+}
+
+// Filtrer par agent
+function filterByAgent(agentId) {
+    const agentSelect = document.getElementById('presenceAgent');
+    if (agentSelect) {
+        agentSelect.value = agentId;
+        loadPresences();
+    }
+}
+
+// Exporter les années pour les présences
+function loadPresenceYears() {
+    const yearSelect = document.getElementById('presenceAnnee');
+    if (!yearSelect) return;
+    
+    const currentYear = new Date().getFullYear();
+    yearSelect.innerHTML = '';
+    
+    for (let year = currentYear - 2; year <= currentYear + 1; year++) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        if (year === currentYear) option.selected = true;
+        yearSelect.appendChild(option);
+    }
+}
+
+// Ajouter à l'initialisation
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('Dashboard initialisé');
+    await checkSession();
+    await loadStats();
+    await loadSuperviseurs();
+    await loadAgents();
+    await loadShops();
+    await loadConfig();
+    await loadConnexionStatus();
+    loadYears();
+    loadPresenceYears(); // Ajouter cette ligne
+    
+    initNavigation();
+    initEvents();
+    
+    // Charger les données par défaut
+    loadRetards();
+    loadRetenuesMensuelles();
+    loadPresences(); // Ajouter cette ligne
+});
+
+// Ajouter l'événement pour le bouton de chargement des présences
+function initEvents() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+    }
+    
+    const loadRetenuesBtn = document.getElementById('loadRetenuesBtn');
+    if (loadRetenuesBtn) {
+        loadRetenuesBtn.addEventListener('click', loadRetenuesMensuelles);
+    }
+    
+    const searchBtn = document.querySelector('#section-dashboard button');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', searchAgents);
+    }
+    
+    const searchInput = document.getElementById('searchAgent');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchAgents();
+            }
+        });
+    }
+    
+    const loadRetardsBtn = document.querySelector('#section-retards button');
+    if (loadRetardsBtn) {
+        loadRetardsBtn.addEventListener('click', loadRetards);
+    }
+    
+    // Ajouter l'événement pour le bouton de chargement des présences
+    const loadPresencesBtn = document.querySelector('#section-presences button');
+    if (loadPresencesBtn) {
+        loadPresencesBtn.addEventListener('click', loadPresences);
+    }
+}
+
+// Exporter la fonction
+window.loadPresences = loadPresences;
+window.filterByAgent = filterByAgent;
