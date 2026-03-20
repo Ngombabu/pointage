@@ -77,7 +77,7 @@
             flex-wrap: wrap;
         }
 
-        .btn-primary, .btn-secondary, .btn-detail {
+        .btn-primary, .btn-secondary, .btn-detail, .btn-regenerate {
             flex: 1;
             padding: 1rem;
             border-radius: 30px;
@@ -131,9 +131,25 @@
             transform: translateY(-2px);
         }
 
+        .btn-regenerate {
+            background: #22c55e;
+            color: white;
+        }
+
+        .btn-regenerate:hover {
+            background: #16a34a;
+            transform: translateY(-2px);
+        }
+
         #qrError {
             color: #ef4444;
             padding: 1rem;
+        }
+
+        #qrStopped {
+            color: #e00482;
+            padding: 1rem;
+            font-weight: 500;
         }
 
         .loading-spinner {
@@ -151,11 +167,21 @@
             100% { transform: rotate(360deg); }
         }
 
+        .counter-badge {
+            display: inline-block;
+            background: #e00482;
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
         @media (max-width: 480px) {
             .actions {
                 flex-direction: column;
             }
-            .btn-primary, .btn-secondary, .btn-detail {
+            .btn-primary, .btn-secondary, .btn-detail, .btn-regenerate {
                 width: 100%;
             }
         }
@@ -181,13 +207,19 @@
             <h2 class="section-title"><span>👤</span> QR Code de pointage</h2>
             
             <div class="qr-section">
+                <div class="counter-badge" id="qrCounter">QR #0/5</div>
+
                 <div class="qr-container">
                     <img id="qrImage" src="" alt="QR Code">
                     <div id="qrLoading" class="loading-spinner"></div>
                     <div id="qrError" style="display: none;">❌ Erreur de chargement</div>
+                    <div id="qrStopped" style="display: none;">
+                        ✅ 5 QR codes générés<br>
+                        <small>Cliquez sur "Régénérer" pour continuer</small>
+                    </div>
                 </div>
 
-                <div class="timer-container">
+                <div class="timer-container" id="timerContainer">
                     <div class="timer-text">
                         Mise à jour dans <span id="countdown">15</span>s
                     </div>
@@ -201,8 +233,9 @@
                 </div>
 
                 <div class="actions">
-                    <button class="btn-primary" id="refreshBtn">🔄 Rafraîchir</button>
+                    <button class="btn-primary" id="refreshBtn" disabled>🔄 Rafraîchir</button>
                     <button class="btn-secondary" id="verifyBtn">✅ Vérifier</button>
+                    <button class="btn-regenerate" id="regenerateBtn">🔄 Régénérer (5 QR)</button>
                     <a href="detaille.html" class="btn-detail" id="detailBtn">📋 Détails</a>
                 </div>
             </div>
@@ -294,14 +327,55 @@
         let userId = userData ? userData.id : null;
         let retryCount = 0;
         const maxRetries = 3;
+        
+        // Nouveaux compteurs pour limiter les appels API
+        let qrGenerationCount = 0;
+        const MAX_GENERATIONS = 5;
+        let isGeneratingActive = true;
 
         function showElement(id, show) {
             const el = document.getElementById(id);
             if (el) el.style.display = show ? 'block' : 'none';
         }
 
+        function updateQRStatus() {
+            const counterSpan = document.getElementById('qrCounter');
+            counterSpan.textContent = `QR #${qrGenerationCount}/${MAX_GENERATIONS}`;
+            
+            if (qrGenerationCount >= MAX_GENERATIONS) {
+                // Arrêter la génération automatique
+                isGeneratingActive = false;
+                
+                // Afficher le message d'arrêt
+                showElement('qrStopped', true);
+                showElement('qrLoading', false);
+                showElement('qrError', false);
+                document.getElementById('qrImage').style.display = 'none';
+                showElement('timerContainer', false);
+                
+                // Désactiver le bouton rafraîchir
+                const refreshBtn = document.getElementById('refreshBtn');
+                if (refreshBtn) refreshBtn.disabled = true;
+                
+                // Arrêter le timer
+                if (timerInterval) clearInterval(timerInterval);
+            }
+        }
+
         function generateQR() {
+            // Vérifier si on peut encore générer
+            if (!isGeneratingActive) {
+                console.log('Génération arrêtée: maximum atteint');
+                return;
+            }
+            
             if (!userId) return;
+            
+            // Vérifier le compteur
+            if (qrGenerationCount >= MAX_GENERATIONS) {
+                updateQRStatus();
+                return;
+            }
 
             const qrImage = document.getElementById('qrImage');
             const refreshBtn = document.getElementById('refreshBtn');
@@ -330,11 +404,14 @@
                 retryCount = 0;
                 
                 if (data.success) {
-                    // CORRECTION : Utiliser le chemin relatif depuis la racine
-                    // L'URL correcte est /SRC/QR/user_2_qr.png
+                    // Incrémenter le compteur
+                    qrGenerationCount++;
+                    updateQRStatus();
+                    
+                    // Construire l'URL de l'image
                     const imageUrl = '/' + data.qr_path;
                     
-                    console.log('Chargement image depuis:', imageUrl);
+                    console.log(`Génération #${qrGenerationCount}/${MAX_GENERATIONS} - Chargement image depuis:`, imageUrl);
                     
                     // Charger l'image
                     const img = new Image();
@@ -367,7 +444,7 @@
                 console.error('Erreur:', error);
                 retryCount++;
                 
-                if (retryCount <= maxRetries) {
+                if (retryCount <= maxRetries && isGeneratingActive) {
                     console.log(`Nouvelle tentative (${retryCount}/${maxRetries})...`);
                     setTimeout(generateQR, 2000);
                 } else {
@@ -380,7 +457,34 @@
             });
         }
 
+        function resetGeneration() {
+            // Réinitialiser le compteur
+            qrGenerationCount = 0;
+            isGeneratingActive = true;
+            
+            // Réafficher le timer
+            showElement('timerContainer', true);
+            showElement('qrStopped', false);
+            showElement('qrError', false);
+            
+            // Mettre à jour l'affichage
+            updateQRStatus();
+            
+            // Activer le bouton rafraîchir
+            const refreshBtn = document.getElementById('refreshBtn');
+            if (refreshBtn) refreshBtn.disabled = false;
+            
+            // Générer un nouveau QR
+            generateQR();
+            
+            // Redémarrer le timer si arrêté
+            if (timerInterval) clearInterval(timerInterval);
+            startTimer();
+        }
+
         function updateTimer() {
+            if (!isGeneratingActive) return;
+            
             countdown--;
             document.getElementById('countdown').textContent = countdown;
             
@@ -407,8 +511,17 @@
         document.addEventListener('click', (e) => {
             if (e.target.id === 'refreshBtn' || e.target.closest('#refreshBtn')) {
                 e.preventDefault();
-                generateQR();
-                countdown = 15;
+                if (isGeneratingActive && qrGenerationCount < MAX_GENERATIONS) {
+                    generateQR();
+                    countdown = 15;
+                } else {
+                    alert('Limite de 5 QR codes atteinte. Cliquez sur "Régénérer" pour continuer.');
+                }
+            }
+            
+            if (e.target.id === 'regenerateBtn' || e.target.closest('#regenerateBtn')) {
+                e.preventDefault();
+                resetGeneration();
             }
             
             if (e.target.id === 'verifyBtn' || e.target.closest('#verifyBtn')) {
