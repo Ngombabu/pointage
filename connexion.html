@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="./SRC/IMG/logo.png" type="image/x-icon">
     <title>Connexion - MobileApp</title>
     <style>
         * {
@@ -48,7 +49,7 @@
         .logo-img {
             width: 44px;
             height: 44px;
-            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            background: linear-gradient(135deg, #e00482, #7c3aed);
             border-radius: 14px;
             display: flex;
             align-items: center;
@@ -88,11 +89,11 @@
 
         .nav-link:hover {
             background: #f1f5f9;
-            color: #2563eb;
+            color: #e00482;
         }
 
         .nav-link.active {
-            background: #2563eb;
+            background: #e00482;
             color: white;
         }
 
@@ -129,7 +130,7 @@
         }
 
         .section-title span {
-            background: #2563eb;
+            background: #e00482;
             color: white;
             width: 38px;
             height: 38px;
@@ -141,7 +142,7 @@
 
         .status-message {
             background: #f1f5f9;
-            border-left: 4px solid #2563eb;
+            border-left: 4px solid #e00482;
             padding: 1rem;
             border-radius: 12px;
             margin-bottom: 1.5rem;
@@ -171,14 +172,14 @@
 
         .form-group input:focus {
             outline: none;
-            border-color: #2563eb;
+            border-color: #e00482;
             box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
         }
 
         .btn-submit {
             width: 100%;
             padding: 1rem;
-            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            background: linear-gradient(135deg, #e00482, #7c3aed);
             border: none;
             border-radius: 20px;
             color: white;
@@ -222,17 +223,16 @@
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        a{
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
     <header>
         <div class="header-container">
-            <div class="logo">
-                <div class="logo-img">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-                    </svg>
-                </div>
+           <div class="logo">
+                <img src="./SRC/IMG/logo.png " width="50px">
                 <span class="logo-text">MobileApp</span>
             </div>
             <nav class="nav-menu">

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agent - MobileApp</title>
+    <link rel="shortcut icon" href="./SRC/IMG/logo.png" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
     <style>
         /* Styles spécifiques à agent.html */
@@ -40,7 +41,7 @@
         .timer-text {
             font-size: 1.2rem;
             font-weight: 600;
-            color: #2563eb;
+            color: #e00482;
             margin-bottom: 0.5rem;
         }
 
@@ -54,7 +55,7 @@
 
         .timer-progress {
             height: 100%;
-            background: linear-gradient(90deg, #2563eb, #7c3aed);
+            background: linear-gradient(90deg, #e00482, #7c3aed);
             transition: width 0.3s linear;
         }
 
@@ -95,12 +96,12 @@
         }
 
         .btn-primary {
-            background: #2563eb;
+            background: #e00482;
             color: white;
         }
 
         .btn-primary:hover:not(:disabled) {
-            background: #1d4ed8;
+            background: #e00482;
             transform: translateY(-2px);
         }
 
@@ -111,8 +112,8 @@
 
         .btn-secondary {
             background: transparent;
-            color: #2563eb;
-            border: 2px solid #2563eb;
+            color: #e00482;
+            border: 2px solid #e00482;
         }
 
         .btn-secondary:hover {
@@ -143,19 +144,20 @@
                 width: 100%;
             }
         }
+        a{
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
     <header>
         <div class="header-container">
             <div class="logo">
-                <div class="logo-img">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-                    </svg>
-                </div>
+                <img src="./SRC/IMG/logo.png " width="50px">
                 <span class="logo-text">MobileApp</span>
             </div>
+            <div id="userHeaderInfo"></div>
+        </div>
             <div id="userHeaderInfo"></div>
         </div>
     </header>
@@ -213,6 +215,13 @@
             </svg>
             <span>Détails</span>
         </a>
+        <!-- Dans la navigation bottom-nav de chaque page -->
+        <a href="profil.html" class="nav-item" id="nav-profil">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+            </svg>
+            <span>Profil</span>
+        </a>
         <a href="consigne.html" class="nav-item" id="nav-consigne">
             <svg viewBox="0 0 24 24">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
@@ -250,7 +259,7 @@
             const fullName = [userData.nom, userData.prenom].filter(Boolean).join(' ');
             headerInfo.innerHTML = `
                 <div class="user-badge">
-                    <span class="avatar">${(fullName[0] || '👤').toUpperCase()}</span>
+                    <span class="avatar" >${(fullName[0] || '👤').toUpperCase()}</span>
                     <span class="name">${fullName || 'Agent'}</span>
                 </div>
                 <button class="btn-logout" id="logoutBtn">
@@ -261,7 +270,7 @@
                 </button>
             `;
         } else {
-            headerInfo.innerHTML = '<a href="connexion.html" class="btn-logout" style="border-color: #2563eb; color: #2563eb;">Connexion</a>';
+            headerInfo.innerHTML = '<a href="connexion.html" class="btn-logout" style="border-color: #e00482; color: #e00482;">Connexion</a>';
         }
 
         // Variables

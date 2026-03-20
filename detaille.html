@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="./SRC/IMG/logo.png" type="image/x-icon">
     <title>Détails - MobileApp</title>
     <link rel="stylesheet" href="style.css">
     <style>
@@ -48,7 +49,7 @@
         .btn-retour {
             display: inline-block;
             padding: 1rem 2rem;
-            background: #2563eb;
+            background: #e00482;
             color: white;
             text-decoration: none;
             border-radius: 30px;
@@ -59,8 +60,11 @@
         }
 
         .btn-retour:hover {
-            background: #1d4ed8;
+            background: #e00482;
             transform: translateY(-2px);
+        }
+        a{
+            text-decoration:none;
         }
     </style>
 </head>
@@ -68,11 +72,7 @@
     <header>
         <div class="header-container">
             <div class="logo">
-                <div class="logo-img">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-                    </svg>
-                </div>
+                <img src="./SRC/IMG/logo.png " width="50px">
                 <span class="logo-text">MobileApp</span>
             </div>
             <div id="userHeaderInfo"></div>
@@ -135,6 +135,13 @@
                 <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
             </svg>
             <span>Détails</span>
+        </a>
+        <!-- Dans la navigation bottom-nav de chaque page -->
+        <a href="profil.html" class="nav-item" id="nav-profil">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+            </svg>
+            <span>Profil</span>
         </a>
         <a href="consigne.html" class="nav-item" id="nav-consigne">
             <svg viewBox="0 0 24 24">

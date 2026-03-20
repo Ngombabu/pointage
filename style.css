@@ -42,7 +42,7 @@ header {
 .logo-img {
     width: 44px;
     height: 44px;
-    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    background: linear-gradient(135deg, #e00482, #7c3aed);
     border-radius: 14px;
     display: flex;
     align-items: center;
@@ -102,7 +102,7 @@ main {
 }
 
 .section-title span {
-    background: #2563eb;
+    background: #e00482;
     color: white;
     width: 38px;
     height: 38px;
@@ -163,12 +163,12 @@ main {
 }
 
 .nav-item.active {
-    color: #2563eb;
+    color: #e00482;
     font-weight: 600;
 }
 
 .nav-item.active svg {
-    fill: #2563eb;
+    fill: #e00482;
     transform: translateY(-2px);
 }
 
@@ -200,7 +200,7 @@ main {
 /* Badge utilisateur dans header */
 .user-badge {
     background: #e6f0ff;
-    color: #2563eb;
+    color:#e00482;
     padding: 0.4rem 1rem;
     border-radius: 30px;
     font-size: 0.9rem;
@@ -213,7 +213,7 @@ main {
 .user-badge .avatar {
     width: 30px;
     height: 30px;
-    background: #2563eb;
+    background: #e00482;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -227,7 +227,7 @@ main {
     width: 40px;
     height: 40px;
     border: 4px solid #f3f3f3;
-    border-top: 4px solid #2563eb;
+    border-top: 4px solid #e00482;
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 20px auto;
