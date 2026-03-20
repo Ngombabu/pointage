@@ -11,11 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      # Récupérer le code
       - name: Récupérer le code
         uses: actions/checkout@v4
       
-      # Envoyer les fichiers via FTP
       - name: Envoyer via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
