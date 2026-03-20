@@ -1,4 +1,0 @@
-Nom d’utilisateur FTP: if0_41083645
-Mot de passe FTP:TwbNlC3rhQTFY
-Nom d’hôte FTP:ftpupload.net
-Port FTP: 21

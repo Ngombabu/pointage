@@ -10,11 +10,10 @@ error_reporting(0);
 
 try {
     require_once('../../phpqrcode-master/qrlib.php');
-
-    define('DB_HOST', '127.0.0.1');
-    define('DB_NAME', 'pointeur_db');
-    define('DB_USER', 'root');
-    define('DB_PASS', '');
+    define('DB_HOST', 'sql302.infinityfree.com');
+    define('DB_NAME', 'if0_41083645_pointage_db ');
+    define('DB_USER', 'if0_41083645');
+    define('DB_PASS', 'TwbNlC3rhQTFY');
     define('BASE_PATH', realpath(__DIR__ . '/../../') . '/');
     define('QR_PATH', BASE_PATH . 'SRC/QR/');
 

@@ -3,10 +3,10 @@
 // Fichier de configuration centralisé pour la base de données
 
 // Configuration de la base de données
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'pointeur_db');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_HOST', 'sql302.infinityfree.com');
+define('DB_NAME', 'if0_41083645_pointage_db ');
+define('DB_USER', 'if0_41083645');
+define('DB_PASS', 'TwbNlC3rhQTFY');
 
 /**
  * Établit une connexion à la base de données
