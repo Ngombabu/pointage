@@ -330,9 +330,9 @@
                 retryCount = 0;
                 
                 if (data.success) {
-                    // CORRECTION: Utiliser l'URL retournée par le serveur directement
-                    // Le serveur retourne qr_url qui contient déjà le bon chemin
-                    const imageUrl = data.qr_url;
+                    // CORRECTION : Utiliser le chemin relatif depuis la racine
+                    // L'URL correcte est /SRC/QR/user_2_qr.png
+                    const imageUrl = '/' + data.qr_path;
                     
                     console.log('Chargement image depuis:', imageUrl);
                     
